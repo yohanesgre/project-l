@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" 
+         xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" 
+         noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" 
+         editor-extension-mode="False">
+    
+    <Style src="../Styles/VisualNovelTheme.uss" />
+    
+    <!-- Root Container -->
+    <ui:VisualElement name="vn-root" class="vn-root">
+        
+        <!-- Dialogue Box with Speech Bubble -->
+        <ui:VisualElement name="dialogue-container" class="dialogue-container">
+            
+            <!-- Speech Bubble Pointer (indicates speaker position) -->
+            <ui:VisualElement name="dialogue-pointer" class="dialogue-pointer" />
+            
+            <!-- Speaker Name -->
+            <ui:Label name="speaker-name" class="speaker-name" text="Character Name" />
+            
+            <!-- Dialogue Text Area -->
+            <ui:Label name="dialogue-text" class="dialogue-text" text="Dialogue text will appear here with typewriter effect..." />
+            
+            <!-- Continue Indicator -->
+            <ui:Label name="continue-indicator" class="continue-indicator continue-indicator--visible" text="▼" />
+            
+        </ui:VisualElement>
+        
+        <!-- Control Bar (Bottom Right) -->
+        <ui:VisualElement name="control-bar" class="control-bar">
+            <ui:Button name="btn-auto" class="control-button" text="A" tooltip="Auto Play" />
+            <ui:Button name="btn-skip" class="control-button" text="S" tooltip="Skip" />
+            <ui:Button name="btn-log" class="control-button" text="L" tooltip="Log/History" />
+            <ui:Button name="btn-settings" class="control-button" text="⚙" tooltip="Settings" />
+        </ui:VisualElement>
+        
+    </ui:VisualElement>
+    
+</ui:UXML>

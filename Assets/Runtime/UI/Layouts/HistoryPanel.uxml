@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" 
+         xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" 
+         noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" 
+         editor-extension-mode="False">
+    
+    <Style src="../Styles/VisualNovelTheme.uss" />
+    
+    <!-- History/Log Panel - Full Screen Overlay -->
+    <ui:VisualElement name="history-container" class="history-container hidden">
+        
+        <!-- Header -->
+        <ui:VisualElement name="history-header" class="history-header">
+            <ui:Label name="history-title" class="history-title" text="Dialogue History" />
+            <ui:Button name="history-close" class="history-close-button" text="✕" />
+        </ui:VisualElement>
+        
+        <!-- Scrollable History List -->
+        <ui:ScrollView name="history-scroll" class="history-scroll">
+            <ui:VisualElement name="history-list" class="history-list">
+                <!-- History entries will be instantiated here -->
+            </ui:VisualElement>
+        </ui:ScrollView>
+        
+    </ui:VisualElement>
+    
+</ui:UXML>
