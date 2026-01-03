@@ -94,6 +94,15 @@ namespace Runtime.WorldBuilding
         {
             CacheOrCreateComponents();
         }
+        
+        private void Start()
+        {
+            // Regenerate road at runtime to ensure interpolated points are available
+            if (Application.isPlaying)
+            {
+                GenerateRoad();
+            }
+        }
 
         private void OnValidate()
         {
@@ -263,6 +272,7 @@ namespace Runtime.WorldBuilding
         /// <summary>
         /// Gets a point along the road path at the specified normalized position (0-1).
         /// The returned point's Position, Forward, Right, and Up are in world space.
+        /// Smoothly interpolates between path points for continuous movement.
         /// </summary>
         /// <param name="t">Normalized position along the path (0 = start, 1 = end).</param>
         /// <returns>The interpolated road point in world space, or null if no path exists.</returns>
@@ -274,19 +284,40 @@ namespace Runtime.WorldBuilding
             }
             
             t = Mathf.Clamp01(t);
-            int index = Mathf.FloorToInt(t * (_interpolatedPoints.Count - 1));
-            index = Mathf.Clamp(index, 0, _interpolatedPoints.Count - 1);
             
-            // Convert local space point to world space for the caller
-            var localPoint = _interpolatedPoints[index];
+            // Calculate the exact position between points
+            float scaledT = t * (_interpolatedPoints.Count - 1);
+            int indexA = Mathf.FloorToInt(scaledT);
+            int indexB = Mathf.CeilToInt(scaledT);
+            
+            // Clamp indices to valid range
+            indexA = Mathf.Clamp(indexA, 0, _interpolatedPoints.Count - 1);
+            indexB = Mathf.Clamp(indexB, 0, _interpolatedPoints.Count - 1);
+            
+            // Get the two points to interpolate between
+            var pointA = _interpolatedPoints[indexA];
+            var pointB = _interpolatedPoints[indexB];
+            
+            // Calculate interpolation factor between the two points
+            float lerpT = scaledT - indexA;
+            
+            // Interpolate all properties between the two points (in local space)
+            Vector3 localPosition = Vector3.Lerp(pointA.Position, pointB.Position, lerpT);
+            Vector3 localForward = Vector3.Slerp(pointA.Forward, pointB.Forward, lerpT).normalized;
+            Vector3 localRight = Vector3.Slerp(pointA.Right, pointB.Right, lerpT).normalized;
+            Vector3 localUp = Vector3.Slerp(pointA.Up, pointB.Up, lerpT).normalized;
+            float width = Mathf.Lerp(pointA.Width, pointB.Width, lerpT);
+            float distanceAlongPath = Mathf.Lerp(pointA.DistanceAlongPath, pointB.DistanceAlongPath, lerpT);
+            
+            // Convert local space to world space for the caller
             return new RoadMeshBuilder.RoadPoint
             {
-                Position = transform.TransformPoint(localPoint.Position),
-                Forward = transform.TransformDirection(localPoint.Forward),
-                Right = transform.TransformDirection(localPoint.Right),
-                Up = transform.TransformDirection(localPoint.Up),
-                Width = localPoint.Width,
-                DistanceAlongPath = localPoint.DistanceAlongPath
+                Position = transform.TransformPoint(localPosition),
+                Forward = transform.TransformDirection(localForward),
+                Right = transform.TransformDirection(localRight),
+                Up = transform.TransformDirection(localUp),
+                Width = width,
+                DistanceAlongPath = distanceAlongPath
             };
         }
 
