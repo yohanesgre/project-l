@@ -17,6 +17,7 @@ namespace Runtime
 
         private Dictionary<string, IEventHandler> _handlerMap;
         private bool _isInitialized;
+        private readonly object _parallelLockObj = new object();
 
         private void Awake()
         {
@@ -193,7 +194,6 @@ namespace Runtime
             }
 
             int remaining = events.Count;
-            object lockObj = new object();
 
             foreach (var (type, value) in events)
             {
@@ -201,7 +201,7 @@ namespace Runtime
                 {
                     handler.Execute(value, () =>
                     {
-                        lock (lockObj)
+                        lock (_parallelLockObj)
                         {
                             remaining--;
                             if (remaining <= 0)
@@ -214,13 +214,19 @@ namespace Runtime
                 else
                 {
                     Debug.LogWarning($"[DialogueEventProcessor] No handler for event type: {type}");
-                    remaining--;
+                    lock (_parallelLockObj)
+                    {
+                        remaining--;
+                    }
                 }
             }
 
-            if (remaining <= 0)
+            lock (_parallelLockObj)
             {
-                onAllComplete?.Invoke();
+                if (remaining <= 0)
+                {
+                    onAllComplete?.Invoke();
+                }
             }
         }
     }

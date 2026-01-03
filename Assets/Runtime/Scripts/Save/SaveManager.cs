@@ -378,18 +378,17 @@ namespace Runtime
 
         private string CaptureScreenshot()
         {
+            Texture2D texture = null;
+            Texture2D thumbnail = null;
             try
             {
-                var texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+                texture = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
                 texture.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
                 texture.Apply();
 
                 // Scale down for thumbnail
-                var thumbnail = ScaleTexture(texture, thumbnailSize.x, thumbnailSize.y);
+                thumbnail = ScaleTexture(texture, thumbnailSize.x, thumbnailSize.y);
                 var bytes = thumbnail.EncodeToJPG(75);
-
-                Destroy(texture);
-                Destroy(thumbnail);
 
                 return Convert.ToBase64String(bytes);
             }
@@ -397,6 +396,11 @@ namespace Runtime
             {
                 Debug.LogWarning($"[SaveManager] Screenshot failed: {e.Message}");
                 return null;
+            }
+            finally
+            {
+                if (texture != null) Destroy(texture);
+                if (thumbnail != null) Destroy(thumbnail);
             }
         }
 

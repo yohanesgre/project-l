@@ -58,32 +58,31 @@ namespace Runtime
 
         private System.Collections.IEnumerator FadeToBackground(Sprite newSprite, Action onComplete)
         {
-            // Fade out
             float elapsed = 0;
-            Color startColor = backgroundImage.color;
+            Color color = backgroundImage.color;
+            float halfDuration = fadeDuration / 2;
 
-            while (elapsed < fadeDuration / 2)
+            while (elapsed < halfDuration)
             {
                 elapsed += Time.deltaTime;
-                float alpha = Mathf.Lerp(1f, 0f, elapsed / (fadeDuration / 2));
-                backgroundImage.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+                color.a = Mathf.Lerp(1f, 0f, elapsed / halfDuration);
+                backgroundImage.color = color;
                 yield return null;
             }
 
-            // Change sprite
             backgroundImage.sprite = newSprite;
 
-            // Fade in
             elapsed = 0;
-            while (elapsed < fadeDuration / 2)
+            while (elapsed < halfDuration)
             {
                 elapsed += Time.deltaTime;
-                float alpha = Mathf.Lerp(0f, 1f, elapsed / (fadeDuration / 2));
-                backgroundImage.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+                color.a = Mathf.Lerp(0f, 1f, elapsed / halfDuration);
+                backgroundImage.color = color;
                 yield return null;
             }
 
-            backgroundImage.color = startColor;
+            color.a = 1f;
+            backgroundImage.color = color;
             onComplete?.Invoke();
         }
     }
