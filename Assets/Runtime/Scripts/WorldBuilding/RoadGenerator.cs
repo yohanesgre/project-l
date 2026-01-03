@@ -89,6 +89,32 @@ namespace Runtime.WorldBuilding
         /// The generated mesh (null if not yet generated).
         /// </summary>
         public Mesh GeneratedMesh => _generatedMesh;
+        
+        /// <summary>
+        /// Gets the total length of the path in world units.
+        /// For loops, this includes the segment from the last point back to the first.
+        /// </summary>
+        public float TotalPathLength
+        {
+            get
+            {
+                if (_interpolatedPoints == null || _interpolatedPoints.Count < 2)
+                    return 0f;
+                
+                // Get the distance of the last interpolated point
+                float length = _interpolatedPoints[_interpolatedPoints.Count - 1].DistanceAlongPath;
+                
+                // For loops, add the distance from the last point back to the first
+                if (_isLoop)
+                {
+                    Vector3 lastPos = transform.TransformPoint(_interpolatedPoints[_interpolatedPoints.Count - 1].Position);
+                    Vector3 firstPos = transform.TransformPoint(_interpolatedPoints[0].Position);
+                    length += Vector3.Distance(lastPos, firstPos);
+                }
+                
+                return length;
+            }
+        }
 
         private void Awake()
         {
@@ -273,6 +299,7 @@ namespace Runtime.WorldBuilding
         /// Gets a point along the road path at the specified normalized position (0-1).
         /// The returned point's Position, Forward, Right, and Up are in world space.
         /// Smoothly interpolates between path points for continuous movement.
+        /// For looping paths, the path is treated as circular (t=1.0 equals t=0.0).
         /// </summary>
         /// <param name="t">Normalized position along the path (0 = start, 1 = end).</param>
         /// <returns>The interpolated road point in world space, or null if no path exists.</returns>
@@ -285,21 +312,46 @@ namespace Runtime.WorldBuilding
             
             t = Mathf.Clamp01(t);
             
-            // Calculate the exact position between points
-            float scaledT = t * (_interpolatedPoints.Count - 1);
-            int indexA = Mathf.FloorToInt(scaledT);
-            int indexB = Mathf.CeilToInt(scaledT);
+            int pointCount = _interpolatedPoints.Count;
+            float scaledT;
+            int indexA, indexB;
+            float lerpT;
             
-            // Clamp indices to valid range
-            indexA = Mathf.Clamp(indexA, 0, _interpolatedPoints.Count - 1);
-            indexB = Mathf.Clamp(indexB, 0, _interpolatedPoints.Count - 1);
+            if (_isLoop)
+            {
+                // For loops, treat the path as circular
+                // The path goes from point 0 to point N-1, then wraps back to point 0
+                // So t=0 and t=1 should both return point 0
+                scaledT = t * pointCount;
+                indexA = Mathf.FloorToInt(scaledT) % pointCount;
+                indexB = (indexA + 1) % pointCount;
+                lerpT = scaledT - Mathf.FloorToInt(scaledT);
+                
+                // At exactly t=1.0, return the first point (same as t=0)
+                if (t >= 1f)
+                {
+                    indexA = 0;
+                    indexB = 1;
+                    lerpT = 0f;
+                }
+            }
+            else
+            {
+                // For non-loops, interpolate from first to last point
+                scaledT = t * (pointCount - 1);
+                indexA = Mathf.FloorToInt(scaledT);
+                indexB = Mathf.CeilToInt(scaledT);
+                
+                // Clamp indices to valid range
+                indexA = Mathf.Clamp(indexA, 0, pointCount - 1);
+                indexB = Mathf.Clamp(indexB, 0, pointCount - 1);
+                
+                lerpT = scaledT - indexA;
+            }
             
             // Get the two points to interpolate between
             var pointA = _interpolatedPoints[indexA];
             var pointB = _interpolatedPoints[indexB];
-            
-            // Calculate interpolation factor between the two points
-            float lerpT = scaledT - indexA;
             
             // Interpolate all properties between the two points (in local space)
             Vector3 localPosition = Vector3.Lerp(pointA.Position, pointB.Position, lerpT);

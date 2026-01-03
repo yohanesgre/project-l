@@ -14,6 +14,7 @@ namespace Runtime.WorldBuilding.Editor
         // Serialized properties for proper undo support
         private SerializedProperty _roadGeneratorProp;
         private SerializedProperty _speedProp;
+        private SerializedProperty _startingProgressProp;
         private SerializedProperty _progressProp;
         private SerializedProperty _endBehaviorProp;
         private SerializedProperty _isFollowingProp;
@@ -35,6 +36,7 @@ namespace Runtime.WorldBuilding.Editor
             // Cache serialized properties
             _roadGeneratorProp = serializedObject.FindProperty("_roadGenerator");
             _speedProp = serializedObject.FindProperty("_speed");
+            _startingProgressProp = serializedObject.FindProperty("_startingProgress");
             _progressProp = serializedObject.FindProperty("_progress");
             _endBehaviorProp = serializedObject.FindProperty("_endBehavior");
             _isFollowingProp = serializedObject.FindProperty("_isFollowing");
@@ -75,9 +77,18 @@ namespace Runtime.WorldBuilding.Editor
             
             EditorGUILayout.Space(5);
             
+            // Starting progress
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(_startingProgressProp, new GUIContent("Starting Progress", "Initial position when game starts and on reset"));
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+                SceneView.RepaintAll();
+            }
+            
             // Progress slider with special handling
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(_progressProp);
+            EditorGUILayout.PropertyField(_progressProp, new GUIContent("Current Progress"));
             if (EditorGUI.EndChangeCheck())
             {
                 serializedObject.ApplyModifiedProperties();
@@ -155,7 +166,7 @@ namespace Runtime.WorldBuilding.Editor
             EditorGUILayout.BeginHorizontal();
             
             GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("Reset to Start", GUILayout.Height(25)))
+            if (GUILayout.Button($"Reset to Start ({_startingProgressProp.floatValue:P0})", GUILayout.Height(25)))
             {
                 Undo.RecordObject(_follower, "Reset Progress");
                 _follower.ResetProgress();
@@ -274,7 +285,8 @@ namespace Runtime.WorldBuilding.Editor
             EditorGUILayout.Space(5);
             
             // Show current state
-            EditorGUILayout.LabelField($"Progress: {_follower.Progress:P1}");
+            EditorGUILayout.LabelField($"Starting Progress: {_follower.StartingProgress:P1}");
+            EditorGUILayout.LabelField($"Current Progress: {_follower.Progress:P1}");
             EditorGUILayout.LabelField($"Speed: {_follower.Speed} units/sec");
             
             if (Application.isPlaying)

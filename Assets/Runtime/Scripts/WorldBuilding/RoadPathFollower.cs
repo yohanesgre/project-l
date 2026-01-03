@@ -48,6 +48,10 @@ namespace Runtime.WorldBuilding
         [Tooltip("Movement speed in units per second.")]
         [SerializeField] private float _speed = 5f;
         
+        [Tooltip("Starting progress along the path (0 = start, 1 = end). Used on game start and reset.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _startingProgress = 0f;
+        
         [Tooltip("Current progress along the path (0 = start, 1 = end).")]
         [Range(0f, 1f)]
         [SerializeField] private float _progress = 0f;
@@ -73,7 +77,12 @@ namespace Runtime.WorldBuilding
         [SerializeField] private float _heightOffset = 0f;
         
         [Tooltip("Lateral offset from the path center (positive = right, negative = left).")]
-        [SerializeField] private float _lateralOffset = 0f;
+        [SerializeField] private float _lateralOffset = 1.5f;
+        
+        [Header("Smoothing Settings")]
+        [Tooltip("Smooth time for position interpolation. Set to 0 for instant movement.")]
+        [Range(0f, 0.5f)]
+        [SerializeField] private float _positionSmoothTime = 0.05f;
         
         #endregion
 
@@ -84,6 +93,11 @@ namespace Runtime.WorldBuilding
         private int _direction = 1; // 1 = forward, -1 = backward (for ping-pong)
         private bool _hasValidPath;
         private bool _pendingAutoStart;
+        
+        // Smoothing state
+        private Vector3 _currentVelocity;
+        private Vector3 _smoothedPosition;
+        private bool _needsPositionSnap;
         
         #endregion
 
@@ -114,6 +128,15 @@ namespace Runtime.WorldBuilding
         {
             get => _progress;
             set => _progress = Mathf.Clamp01(value);
+        }
+        
+        /// <summary>
+        /// Starting progress along the path. Used on game start and reset.
+        /// </summary>
+        public float StartingProgress
+        {
+            get => _startingProgress;
+            set => _startingProgress = Mathf.Clamp01(value);
         }
         
         /// <summary>
@@ -165,8 +188,15 @@ namespace Runtime.WorldBuilding
         
         private void Start()
         {
+            // Set initial progress from starting progress
+            _progress = _startingProgress;
+            
             CachePathLength();
             ApplyPositionImmediate();
+            
+            // Initialize smoothed position to current position
+            _smoothedPosition = _transform.position;
+            _currentVelocity = Vector3.zero;
             
             if (_autoStartFollowing)
             {
@@ -274,11 +304,11 @@ namespace Runtime.WorldBuilding
         }
         
         /// <summary>
-        /// Resets progress to the start of the path.
+        /// Resets progress to the starting progress value.
         /// </summary>
         public void ResetProgress()
         {
-            _progress = 0f;
+            _progress = _startingProgress;
             _direction = 1;
             ApplyPositionImmediate();
         }
@@ -305,13 +335,9 @@ namespace Runtime.WorldBuilding
             
             if (_roadGenerator == null) return;
             
-            // Get the end point to determine total path length
-            var endPoint = _roadGenerator.GetPointAlongPath(1f);
-            if (endPoint.HasValue)
-            {
-                _pathLength = endPoint.Value.DistanceAlongPath;
-                _hasValidPath = _pathLength > 0f;
-            }
+            // Get the total path length from the road generator
+            _pathLength = _roadGenerator.TotalPathLength;
+            _hasValidPath = _pathLength > 0f;
         }
         
         /// <summary>
@@ -356,10 +382,12 @@ namespace Runtime.WorldBuilding
                     if (_progress >= 1f)
                     {
                         _progress -= 1f;
+                        // No position snap needed - the path is circular and positions match at 0% and 100%
                     }
                     else if (_progress <= 0f)
                     {
                         _progress += 1f;
+                        // No position snap needed - the path is circular and positions match at 0% and 100%
                     }
                     break;
                     
@@ -397,7 +425,24 @@ namespace Runtime.WorldBuilding
             targetPosition += roadPoint.Up * _heightOffset;
             targetPosition += roadPoint.Right * _lateralOffset;
             
-            _transform.position = targetPosition;
+            // Apply smoothing (or snap if loop just occurred)
+            if (_needsPositionSnap || _positionSmoothTime <= 0f)
+            {
+                _transform.position = targetPosition;
+                _smoothedPosition = targetPosition;
+                _currentVelocity = Vector3.zero;
+                _needsPositionSnap = false;
+            }
+            else
+            {
+                _smoothedPosition = Vector3.SmoothDamp(
+                    _smoothedPosition, 
+                    targetPosition, 
+                    ref _currentVelocity, 
+                    _positionSmoothTime
+                );
+                _transform.position = _smoothedPosition;
+            }
             
             // Apply rotation based on mode
             ApplyRotation(roadPoint);
@@ -427,6 +472,10 @@ namespace Runtime.WorldBuilding
             targetPosition += roadPoint.Right * _lateralOffset;
             
             _transform.position = targetPosition;
+            
+            // Reset smoothing state to prevent interpolation artifacts
+            _smoothedPosition = targetPosition;
+            _currentVelocity = Vector3.zero;
             
             // Apply rotation immediately
             ApplyRotationImmediate(roadPoint);
