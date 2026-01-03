@@ -148,6 +148,7 @@ namespace Runtime.WorldBuilding
             }
             
             // Extract positions and widths from waypoints
+            // Convert world positions to local space so the mesh aligns correctly
             List<Vector3> positions = new List<Vector3>();
             List<float> widths = new List<float>();
             
@@ -155,7 +156,9 @@ namespace Runtime.WorldBuilding
             {
                 if (waypoint == null) continue;
                 
-                positions.Add(waypoint.Position);
+                // Convert waypoint world position to local space relative to this transform
+                Vector3 localPosition = transform.InverseTransformPoint(waypoint.Position);
+                positions.Add(localPosition);
                 
                 // Use waypoint's width override if set, otherwise use default
                 float width = waypoint.WidthOverride > 0 ? waypoint.WidthOverride : _roadWidth;
@@ -259,9 +262,10 @@ namespace Runtime.WorldBuilding
 
         /// <summary>
         /// Gets a point along the road path at the specified normalized position (0-1).
+        /// The returned point's Position, Forward, Right, and Up are in world space.
         /// </summary>
         /// <param name="t">Normalized position along the path (0 = start, 1 = end).</param>
-        /// <returns>The interpolated road point, or null if no path exists.</returns>
+        /// <returns>The interpolated road point in world space, or null if no path exists.</returns>
         public RoadMeshBuilder.RoadPoint? GetPointAlongPath(float t)
         {
             if (_interpolatedPoints == null || _interpolatedPoints.Count == 0)
@@ -273,7 +277,17 @@ namespace Runtime.WorldBuilding
             int index = Mathf.FloorToInt(t * (_interpolatedPoints.Count - 1));
             index = Mathf.Clamp(index, 0, _interpolatedPoints.Count - 1);
             
-            return _interpolatedPoints[index];
+            // Convert local space point to world space for the caller
+            var localPoint = _interpolatedPoints[index];
+            return new RoadMeshBuilder.RoadPoint
+            {
+                Position = transform.TransformPoint(localPoint.Position),
+                Forward = transform.TransformDirection(localPoint.Forward),
+                Right = transform.TransformDirection(localPoint.Right),
+                Up = transform.TransformDirection(localPoint.Up),
+                Width = localPoint.Width,
+                DistanceAlongPath = localPoint.DistanceAlongPath
+            };
         }
 
         private void CacheOrCreateComponents()
@@ -382,17 +396,19 @@ namespace Runtime.WorldBuilding
             
             Gizmos.color = Color.cyan;
             
+            // Interpolated points are in local space, convert to world space for drawing
             for (int i = 0; i < _interpolatedPoints.Count - 1; i++)
             {
-                Gizmos.DrawLine(_interpolatedPoints[i].Position, _interpolatedPoints[i + 1].Position);
+                Vector3 worldPos = transform.TransformPoint(_interpolatedPoints[i].Position);
+                Vector3 worldPosNext = transform.TransformPoint(_interpolatedPoints[i + 1].Position);
+                Gizmos.DrawLine(worldPos, worldPosNext);
             }
             
             if (_isLoop && _interpolatedPoints.Count > 1)
             {
-                Gizmos.DrawLine(
-                    _interpolatedPoints[_interpolatedPoints.Count - 1].Position,
-                    _interpolatedPoints[0].Position
-                );
+                Vector3 worldPosLast = transform.TransformPoint(_interpolatedPoints[_interpolatedPoints.Count - 1].Position);
+                Vector3 worldPosFirst = transform.TransformPoint(_interpolatedPoints[0].Position);
+                Gizmos.DrawLine(worldPosLast, worldPosFirst);
             }
         }
 
@@ -402,6 +418,7 @@ namespace Runtime.WorldBuilding
             
             Gizmos.color = _edgeColor;
             
+            // Interpolated points are in local space, convert to world space for drawing
             for (int i = 0; i < _interpolatedPoints.Count - 1; i++)
             {
                 var current = _interpolatedPoints[i];
@@ -410,14 +427,20 @@ namespace Runtime.WorldBuilding
                 float halfWidthCurrent = current.Width / 2f;
                 float halfWidthNext = next.Width / 2f;
                 
+                // Convert local positions to world, then offset by local-space right vector transformed to world
+                Vector3 worldPosCurrent = transform.TransformPoint(current.Position);
+                Vector3 worldPosNext = transform.TransformPoint(next.Position);
+                Vector3 worldRightCurrent = transform.TransformDirection(current.Right);
+                Vector3 worldRightNext = transform.TransformDirection(next.Right);
+                
                 // Left edge
-                Vector3 leftCurrent = current.Position - current.Right * halfWidthCurrent;
-                Vector3 leftNext = next.Position - next.Right * halfWidthNext;
+                Vector3 leftCurrent = worldPosCurrent - worldRightCurrent * halfWidthCurrent;
+                Vector3 leftNext = worldPosNext - worldRightNext * halfWidthNext;
                 Gizmos.DrawLine(leftCurrent, leftNext);
                 
                 // Right edge
-                Vector3 rightCurrent = current.Position + current.Right * halfWidthCurrent;
-                Vector3 rightNext = next.Position + next.Right * halfWidthNext;
+                Vector3 rightCurrent = worldPosCurrent + worldRightCurrent * halfWidthCurrent;
+                Vector3 rightNext = worldPosNext + worldRightNext * halfWidthNext;
                 Gizmos.DrawLine(rightCurrent, rightNext);
             }
         }
