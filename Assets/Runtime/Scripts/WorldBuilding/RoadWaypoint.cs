@@ -38,7 +38,7 @@ namespace Runtime.WorldBuilding
 
 #if UNITY_EDITOR
         [Header("Gizmo Settings")]
-        [SerializeField] private float _gizmoSize = 0.5f;
+        [SerializeField] private float _gizmoSize = 0.1f;
         [SerializeField] private Color _gizmoColor = Color.yellow;
         
         private void OnDrawGizmos()
