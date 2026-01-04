@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627140c536e5c7303ba1f26b55ebed62, type: 3}
+  m_Name: DialogueDatabase
+  m_EditorClassIdentifier: 
+  SourceSheetName: DialogueDatabase
+  SourceURL: https://docs.google.com/spreadsheets/d/e/2PACX-1vS_xk1F-1yZWJWp1KZXja31XnZ6oV3TyQ23jooTKmoSMdD52_Aa4yRivYBvJMoPIcTfwZQqyGBj1z_A/pub?output=csv
+  ImportedAt: 2026-01-03 20:41:06
+  Entries:
+  - TextID: 1
+    SceneID: 1
+    Order: 1
+    Speaker: Kano
+    Expression: happy
+    DialogueText: '"Nice move"'
+    EventTag: 
+    NextID: 2
+    Notes: 
