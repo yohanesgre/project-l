@@ -1,7 +1,10 @@
 {
     "name": "Features.Dialogue",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Unity.InputSystem",
+        "Core"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -22,6 +22,9 @@ namespace MyGame.Features.Dialogue.Models
         [Tooltip("When this data was last imported")]
         public string ImportedAt;
 
+        [Tooltip("Source tabs that were imported (for multi-tab imports)")]
+        public List<string> SourceTabs = new List<string>();
+
         [Header("Dialogue Data")]
         [Tooltip("All dialogue entries in this database")]
         public List<DialogueEntry> Entries = new List<DialogueEntry>();

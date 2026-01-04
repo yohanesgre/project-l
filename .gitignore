@@ -97,3 +97,7 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Google Sheets Settings (contains API keys - each developer configures their own)
+/[Aa]ssets/[Ss]ettings/GoogleSheetsSettings.asset
+/[Aa]ssets/[Ss]ettings/GoogleSheetsSettings.asset.meta
