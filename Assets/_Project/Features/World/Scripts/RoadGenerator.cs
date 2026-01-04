@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using MyGame.Core;
 
 namespace MyGame.Features.World
 {
@@ -14,7 +16,7 @@ namespace MyGame.Features.World
     /// 5. Click "Generate Road" in the inspector or call GenerateRoad() at runtime
     /// </summary>
     [ExecuteInEditMode]
-    public class RoadGenerator : MonoBehaviour
+    public class RoadGenerator : MonoBehaviour, IPathProvider
     {
         [Header("Road Path")]
         [Tooltip("List of waypoints defining the road path. If empty, child RoadWaypoint components will be used.")]
@@ -144,7 +146,7 @@ namespace MyGame.Features.World
         [SerializeField] private float _grassSpacingVariation = 1f;
         
         [Tooltip("Minimum distance from road edge (positive = outward from road).")]
-        [SerializeField] private float _grassMinEdgeOffset = 0.2f;
+        [SerializeField] private float _grassMinEdgeOffset = 0.5f;
         
         [Tooltip("Maximum distance from road edge (positive = outward from road).")]
         [SerializeField] private float _grassMaxEdgeOffset = 3f;
@@ -239,6 +241,12 @@ namespace MyGame.Features.World
         /// The generated mesh (null if not yet generated).
         /// </summary>
         public Mesh GeneratedMesh => _generatedMesh;
+        
+        /// <summary>
+        /// Whether the road has a valid path for following.
+        /// Part of IPathProvider interface.
+        /// </summary>
+        public bool HasValidPath => _interpolatedPoints != null && _interpolatedPoints.Count >= 2;
         
         /// <summary>
         /// Gets the total length of the path in world units.
@@ -1284,7 +1292,7 @@ namespace MyGame.Features.World
         /// </summary>
         /// <param name="t">Normalized position along the path (0 = start, 1 = end).</param>
         /// <returns>The interpolated road point in world space, or null if no path exists.</returns>
-        public RoadMeshBuilder.RoadPoint? GetPointAlongPath(float t)
+        public PathPoint? GetPointAlongPath(float t)
         {
             if (_interpolatedPoints == null || _interpolatedPoints.Count == 0)
             {
@@ -1343,15 +1351,14 @@ namespace MyGame.Features.World
             float distanceAlongPath = Mathf.Lerp(pointA.DistanceAlongPath, pointB.DistanceAlongPath, lerpT);
             
             // Convert local space to world space for the caller
-            return new RoadMeshBuilder.RoadPoint
-            {
-                Position = transform.TransformPoint(localPosition),
-                Forward = transform.TransformDirection(localForward),
-                Right = transform.TransformDirection(localRight),
-                Up = transform.TransformDirection(localUp),
-                Width = width,
-                DistanceAlongPath = distanceAlongPath
-            };
+            return new PathPoint(
+                transform.TransformPoint(localPosition),
+                transform.TransformDirection(localForward),
+                transform.TransformDirection(localRight),
+                transform.TransformDirection(localUp),
+                width,
+                distanceAlongPath
+            );
         }
 
         private void CacheOrCreateComponents()
@@ -1385,8 +1392,10 @@ namespace MyGame.Features.World
         [Header("Gizmo Settings")]
         [SerializeField] private bool _showPathGizmos = true;
         [SerializeField] private bool _showRoadEdges = true;
+        [SerializeField] private bool _showGrassArea = false;
         [SerializeField] private Color _pathColor = Color.green;
         [SerializeField] private Color _edgeColor = new Color(0.5f, 0.5f, 1f, 0.5f);
+        [SerializeField] private Color _grassAreaColor = new Color(0.2f, 0.8f, 0.2f, 0.5f);
 
         private void OnDrawGizmos()
         {
@@ -1404,6 +1413,11 @@ namespace MyGame.Features.World
             if (_showRoadEdges)
             {
                 DrawRoadEdges();
+            }
+            
+            if (_showGrassArea && _enableGrass)
+            {
+                DrawGrassArea();
             }
         }
 
@@ -1506,6 +1520,70 @@ namespace MyGame.Features.World
                 Vector3 rightCurrent = worldPosCurrent + worldRightCurrent * halfWidthCurrent;
                 Vector3 rightNext = worldPosNext + worldRightNext * halfWidthNext;
                 Gizmos.DrawLine(rightCurrent, rightNext);
+            }
+        }
+        
+        private void DrawGrassArea()
+        {
+            if (_interpolatedPoints == null || _interpolatedPoints.Count < 2) return;
+            
+            // Draw grass placement boundaries
+            for (int i = 0; i < _interpolatedPoints.Count - 1; i++)
+            {
+                var current = _interpolatedPoints[i];
+                var next = _interpolatedPoints[i + 1];
+                
+                float halfWidthCurrent = current.Width / 2f;
+                float halfWidthNext = next.Width / 2f;
+                
+                Vector3 worldPosCurrent = transform.TransformPoint(current.Position);
+                Vector3 worldPosNext = transform.TransformPoint(next.Position);
+                Vector3 worldRightCurrent = transform.TransformDirection(current.Right);
+                Vector3 worldRightNext = transform.TransformDirection(next.Right);
+                
+                // Left side grass area (min and max boundaries)
+                if (_leftGrass)
+                {
+                    // Min edge (inner boundary - closer to road)
+                    Gizmos.color = _grassAreaColor;
+                    Vector3 leftMinCurrent = worldPosCurrent - worldRightCurrent * (halfWidthCurrent + _grassMinEdgeOffset);
+                    Vector3 leftMinNext = worldPosNext - worldRightNext * (halfWidthNext + _grassMinEdgeOffset);
+                    Gizmos.DrawLine(leftMinCurrent, leftMinNext);
+                    
+                    // Max edge (outer boundary - farther from road)
+                    Vector3 leftMaxCurrent = worldPosCurrent - worldRightCurrent * (halfWidthCurrent + _grassMaxEdgeOffset);
+                    Vector3 leftMaxNext = worldPosNext - worldRightNext * (halfWidthNext + _grassMaxEdgeOffset);
+                    Gizmos.DrawLine(leftMaxCurrent, leftMaxNext);
+                    
+                    // Connect min and max at intervals to show the band
+                    if (i % 5 == 0)
+                    {
+                        Gizmos.color = new Color(_grassAreaColor.r, _grassAreaColor.g, _grassAreaColor.b, 0.3f);
+                        Gizmos.DrawLine(leftMinCurrent, leftMaxCurrent);
+                    }
+                }
+                
+                // Right side grass area (min and max boundaries)
+                if (_rightGrass)
+                {
+                    // Min edge (inner boundary - closer to road)
+                    Gizmos.color = _grassAreaColor;
+                    Vector3 rightMinCurrent = worldPosCurrent + worldRightCurrent * (halfWidthCurrent + _grassMinEdgeOffset);
+                    Vector3 rightMinNext = worldPosNext + worldRightNext * (halfWidthNext + _grassMinEdgeOffset);
+                    Gizmos.DrawLine(rightMinCurrent, rightMinNext);
+                    
+                    // Max edge (outer boundary - farther from road)
+                    Vector3 rightMaxCurrent = worldPosCurrent + worldRightCurrent * (halfWidthCurrent + _grassMaxEdgeOffset);
+                    Vector3 rightMaxNext = worldPosNext + worldRightNext * (halfWidthNext + _grassMaxEdgeOffset);
+                    Gizmos.DrawLine(rightMaxCurrent, rightMaxNext);
+                    
+                    // Connect min and max at intervals to show the band
+                    if (i % 5 == 0)
+                    {
+                        Gizmos.color = new Color(_grassAreaColor.r, _grassAreaColor.g, _grassAreaColor.b, 0.3f);
+                        Gizmos.DrawLine(rightMinCurrent, rightMaxCurrent);
+                    }
+                }
             }
         }
 #endif

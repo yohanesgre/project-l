@@ -74,8 +74,10 @@ namespace MyGame.Features.World.Editor
         private SerializedProperty _generateColliderProp;
         private SerializedProperty _showPathGizmosProp;
         private SerializedProperty _showRoadEdgesProp;
+        private SerializedProperty _showGrassAreaProp;
         private SerializedProperty _pathColorProp;
         private SerializedProperty _edgeColorProp;
+        private SerializedProperty _grassAreaColorProp;
 
         private void OnEnable()
         {
@@ -139,8 +141,10 @@ namespace MyGame.Features.World.Editor
             _generateColliderProp = serializedObject.FindProperty("_generateCollider");
             _showPathGizmosProp = serializedObject.FindProperty("_showPathGizmos");
             _showRoadEdgesProp = serializedObject.FindProperty("_showRoadEdges");
+            _showGrassAreaProp = serializedObject.FindProperty("_showGrassArea");
             _pathColorProp = serializedObject.FindProperty("_pathColor");
             _edgeColorProp = serializedObject.FindProperty("_edgeColor");
+            _grassAreaColorProp = serializedObject.FindProperty("_grassAreaColor");
         }
 
         public override void OnInspectorGUI()
@@ -199,8 +203,10 @@ namespace MyGame.Features.World.Editor
             EditorGUILayout.LabelField("Gizmo Settings", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_showPathGizmosProp);
             EditorGUILayout.PropertyField(_showRoadEdgesProp);
+            EditorGUILayout.PropertyField(_showGrassAreaProp, new GUIContent("Show Grass Area", "Visualize grass min/max edge offset boundaries"));
             EditorGUILayout.PropertyField(_pathColorProp);
             EditorGUILayout.PropertyField(_edgeColorProp);
+            EditorGUILayout.PropertyField(_grassAreaColorProp);
             
             serializedObject.ApplyModifiedProperties();
             

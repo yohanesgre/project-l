@@ -1,8 +1,10 @@
 {
-    "name": "Core.Editor",
+    "name": "Features.Character.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:4708f2795463878ba84348f1c9f7580d"
+        "GUID:4708f2795463878ba84348f1c9f7580d",
+        "GUID:7ac0f33e17e667bbcb360a34c9507646",
+        "GUID:f98f25741fbda2d75b9dacd69327f85f"
     ],
     "includePlatforms": [
         "Editor"

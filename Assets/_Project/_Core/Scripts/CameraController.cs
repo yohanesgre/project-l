@@ -1,73 +1,37 @@
 using UnityEngine;
 
-namespace MyGame.Features.World
+namespace MyGame.Core
 {
     /// <summary>
-    /// A camera controller designed for looping road animations with parallax backgrounds.
-    /// Supports multiple modes: path-following and orbit (inside circle looking out).
+    /// A camera controller that follows any IPathProvider path.
+    /// Designed for looping road animations with parallax backgrounds.
+    /// Follows target in both edit mode and play mode.
     /// </summary>
+    [ExecuteAlways]
     public class CameraController : MonoBehaviour
     {
-        #region Enums
-        
-        /// <summary>
-        /// Defines how the camera follows the target.
-        /// </summary>
-        public enum CameraMode
-        {
-            /// <summary>Camera follows the road path ahead of the target, looking back.</summary>
-            FollowPath,
-            /// <summary>Camera orbits around a center point, always looking at target. Great for circular roads.</summary>
-            OrbitCenter,
-            /// <summary>Camera stays at a fixed position, always looking at target.</summary>
-            FixedPosition
-        }
-        
-        #endregion
-        
         #region Serialized Fields
         
-        [Header("Camera Mode")]
-        [Tooltip("How the camera follows the target.")]
-        [SerializeField] private CameraMode _cameraMode = CameraMode.FollowPath;
-        
         [Header("References")]
-        [Tooltip("The RoadGenerator that defines the path for the camera to follow (used in FollowPath mode).")]
-        [SerializeField] private RoadGenerator _roadGenerator;
+        [Tooltip("The path provider that defines the camera's path (CustomPath, RoadGenerator, etc.).")]
+        [SerializeField] private Component _pathProviderComponent;
         
         [Tooltip("The target Transform to look at (e.g., the cyclist/character).")]
         [SerializeField] private Transform _target;
         
-        [Tooltip("Optional: Reference to the RoadPathFollower on the target for synced movement.")]
-        [SerializeField] private RoadPathFollower _targetPathFollower;
+        [Tooltip("Optional: Reference to a path follower component on the target for synced movement.")]
+        [SerializeField] private Component _targetPathFollowerComponent;
         
-        [Header("Path Mode Settings")]
+        [Header("Path Position Settings")]
         [Tooltip("How far ahead of the target the camera should be (in path progress, 0-1 range). E.g., 0.05 = 5% ahead on the path.")]
         [Range(0f, 0.5f)]
         [SerializeField] private float _progressOffset = 0.01f;
         
-        [Tooltip("Height offset from the road surface.")]
+        [Tooltip("Height offset from the path surface.")]
         [SerializeField] private float _heightOffset = 2.5f;
         
-        [Tooltip("Lateral offset from road center (positive = right, negative = left).")]
+        [Tooltip("Lateral offset from path center (positive = right, negative = left).")]
         [SerializeField] private float _lateralOffset = -7.5f;
-        
-        [Header("Orbit Mode Settings")]
-        [Tooltip("Center point of the orbit (e.g., center of circular road). If null, uses this transform's initial position.")]
-        [SerializeField] private Transform _orbitCenter;
-        
-        [Tooltip("Distance from orbit center to camera.")]
-        [SerializeField] private float _orbitRadius = 1f;
-        
-        [Tooltip("Height offset from orbit center.")]
-        [SerializeField] private float _orbitHeightOffset = 0f;
-        
-        [Tooltip("If true, camera stays at same height as target. If false, uses orbit height offset.")]
-        [SerializeField] private bool _matchTargetHeight = false;
-        
-        [Header("Fixed Position Settings")]
-        [Tooltip("Fixed world position for the camera (used in FixedPosition mode).")]
-        [SerializeField] private Vector3 _fixedPosition = Vector3.zero;
         
         [Header("Look At Settings")]
         [Tooltip("Height offset for the look-at point on the target.")]
@@ -111,20 +75,27 @@ namespace MyGame.Features.World
         #region Private Fields
         
         private Transform _transform;
+        private IPathProvider _pathProvider;
+        private IPathFollower _targetPathFollower;
         private Vector3 _currentVelocity;
         private bool _isInitialized;
+        private bool _hasWarnedAboutInvalidPathFollower;
         
         #endregion
 
         #region Properties
         
         /// <summary>
-        /// The RoadGenerator that defines the camera's path.
+        /// The path provider for the camera.
         /// </summary>
-        public RoadGenerator RoadGenerator
+        public IPathProvider PathProvider
         {
-            get => _roadGenerator;
-            set => _roadGenerator = value;
+            get => _pathProvider;
+            set
+            {
+                _pathProvider = value;
+                _pathProviderComponent = value as Component;
+            }
         }
         
         /// <summary>
@@ -137,12 +108,16 @@ namespace MyGame.Features.World
         }
         
         /// <summary>
-        /// Reference to the target's RoadPathFollower for synced movement.
+        /// Reference to the target's path follower for synced movement.
         /// </summary>
-        public RoadPathFollower TargetPathFollower
+        public IPathFollower TargetPathFollower
         {
             get => _targetPathFollower;
-            set => _targetPathFollower = value;
+            set
+            {
+                _targetPathFollower = value;
+                _targetPathFollowerComponent = value as Component;
+            }
         }
         
         /// <summary>
@@ -155,7 +130,7 @@ namespace MyGame.Features.World
         }
         
         /// <summary>
-        /// Height offset from the road surface.
+        /// Height offset from the path surface.
         /// </summary>
         public float HeightOffset
         {
@@ -167,24 +142,6 @@ namespace MyGame.Features.World
         /// Current camera progress along the path.
         /// </summary>
         public float CurrentProgress { get; private set; }
-        
-        /// <summary>
-        /// The current camera mode.
-        /// </summary>
-        public CameraMode Mode
-        {
-            get => _cameraMode;
-            set => _cameraMode = value;
-        }
-        
-        /// <summary>
-        /// Orbit radius for OrbitCenter mode.
-        /// </summary>
-        public float OrbitRadius
-        {
-            get => _orbitRadius;
-            set => _orbitRadius = Mathf.Max(0.1f, value);
-        }
         
         /// <summary>
         /// Roll angle for downhill illusion effect.
@@ -211,20 +168,35 @@ namespace MyGame.Features.World
         private void Awake()
         {
             _transform = transform;
+            ResolvePathProvider();
+            ResolveTargetPathFollower();
+        }
+        
+        private void OnEnable()
+        {
+            // Ensure transform is cached in edit mode
+            if (_transform == null)
+            {
+                _transform = transform;
+            }
+            ResolvePathProvider();
+            ResolveTargetPathFollower();
         }
         
         private void Start()
         {
-            // Try to auto-find RoadPathFollower on target if not assigned
+            // Try to auto-find path follower on target if not assigned
             if (_targetPathFollower == null && _target != null)
             {
-                _targetPathFollower = _target.GetComponent<RoadPathFollower>();
+                _targetPathFollower = _target.GetComponent<IPathFollower>();
+                _targetPathFollowerComponent = _targetPathFollower as Component;
             }
             
-            // Try to get RoadGenerator from target's path follower if not assigned
-            if (_roadGenerator == null && _targetPathFollower != null)
+            // Try to get path provider from target's path follower if not assigned
+            if (_pathProvider == null && _targetPathFollower != null)
             {
-                _roadGenerator = _targetPathFollower.RoadGenerator;
+                _pathProvider = _targetPathFollower.PathProvider;
+                _pathProviderComponent = _pathProvider as Component;
             }
             
             if (_snapOnStart)
@@ -235,20 +207,27 @@ namespace MyGame.Features.World
             _isInitialized = true;
         }
         
-        private void OnDestroy()
-        {
-            // Nothing to clean up now
-        }
-        
         private void LateUpdate()
         {
-            // Check required references based on mode
-            if (_cameraMode == CameraMode.FollowPath && _roadGenerator == null) return;
-            if (_cameraMode == CameraMode.OrbitCenter && _target == null) return;
-            if (_cameraMode == CameraMode.FixedPosition && _target == null) return;
+            // Ensure path provider is resolved in edit mode
+            if (!Application.isPlaying)
+            {
+                ResolvePathProvider();
+                ResolveTargetPathFollower();
+            }
             
-            UpdateCameraPosition();
-            UpdateCameraRotation();
+            if (_pathProvider == null || !_pathProvider.HasValidPath) return;
+            
+            // In edit mode, always snap (no smoothing)
+            if (!Application.isPlaying)
+            {
+                SnapToPosition();
+            }
+            else
+            {
+                UpdateCameraPosition();
+                UpdateCameraRotation();
+            }
         }
         
         private void OnValidate()
@@ -258,17 +237,16 @@ namespace MyGame.Features.World
             _rotationSmoothSpeed = Mathf.Max(0f, _rotationSmoothSpeed);
             _rollAngle = Mathf.Clamp(_rollAngle, -45f, 45f);
             _pitchOffset = Mathf.Clamp(_pitchOffset, -30f, 30f);
-            _orbitRadius = Mathf.Max(0.1f, _orbitRadius);
             
-            // Update in editor
-            if (!Application.isPlaying && (_roadGenerator != null || _target != null))
+            // Ensure transform is cached
+            if (_transform == null)
             {
-                if (_transform == null)
-                {
-                    _transform = transform;
-                }
-                SnapToPosition();
+                _transform = transform;
             }
+            
+            ResolvePathProvider();
+            ResolveTargetPathFollower();
+            // LateUpdate will handle snapping in edit mode
         }
         
         #endregion
@@ -280,10 +258,7 @@ namespace MyGame.Features.World
         /// </summary>
         public void SnapToPosition()
         {
-            // Check required references based on mode
-            if (_cameraMode == CameraMode.FollowPath && _roadGenerator == null) return;
-            if (_cameraMode == CameraMode.OrbitCenter && _target == null) return;
-            if (_cameraMode == CameraMode.FixedPosition && _target == null) return;
+            if (_pathProvider == null || !_pathProvider.HasValidPath) return;
             
             if (_transform == null)
             {
@@ -324,7 +299,6 @@ namespace MyGame.Features.World
         public void OnTargetLoopTeleport(Vector3 teleportDelta)
         {
             // Snap camera position to the correct location based on new target progress.
-            // This handles curved/sloped roads correctly where a simple delta won't work.
             Vector3 targetPosition = CalculateTargetPosition();
             _transform.position = targetPosition;
             
@@ -336,14 +310,89 @@ namespace MyGame.Features.World
             _currentVelocity = Vector3.zero;
         }
         
+        /// <summary>
+        /// Sets a new path provider at runtime.
+        /// </summary>
+        public void SetPathProvider(IPathProvider provider)
+        {
+            _pathProvider = provider;
+            _pathProviderComponent = provider as Component;
+        }
+        
+        /// <summary>
+        /// Sets the target path follower at runtime.
+        /// </summary>
+        public void SetTargetPathFollower(IPathFollower follower)
+        {
+            _targetPathFollower = follower;
+            _targetPathFollowerComponent = follower as Component;
+        }
+        
         #endregion
 
         #region Private Methods
         
+        private void ResolvePathProvider()
+        {
+            if (_pathProviderComponent != null)
+            {
+                _pathProvider = _pathProviderComponent as IPathProvider;
+                
+                if (_pathProvider == null)
+                {
+                    Debug.LogWarning($"CameraController: Assigned component '{_pathProviderComponent.GetType().Name}' does not implement IPathProvider.", this);
+                }
+            }
+            else
+            {
+                _pathProvider = null;
+            }
+        }
+        
+        private void ResolveTargetPathFollower()
+        {
+            if (_targetPathFollowerComponent != null)
+            {
+                _targetPathFollower = _targetPathFollowerComponent as IPathFollower;
+                
+                if (_targetPathFollower == null)
+                {
+                    if (!_hasWarnedAboutInvalidPathFollower)
+                    {
+                        Debug.LogWarning($"CameraController: Assigned component '{_targetPathFollowerComponent.GetType().Name}' does not implement IPathFollower. Attempting to find valid component on target...", this);
+                        _hasWarnedAboutInvalidPathFollower = true;
+                    }
+                    
+                    // Try to find a valid IPathFollower on the target GameObject
+                    if (_target != null)
+                    {
+                        var follower = _target.GetComponent<IPathFollower>();
+                        if (follower != null)
+                        {
+                            _targetPathFollowerComponent = follower as Component;
+                            _targetPathFollower = follower;
+                            Debug.Log($"CameraController: Found and assigned {_targetPathFollowerComponent.GetType().Name} as target path follower.", this);
+                        }
+                        else
+                        {
+                            _targetPathFollowerComponent = null;
+                        }
+                    }
+                    else
+                    {
+                        _targetPathFollowerComponent = null;
+                    }
+                }
+            }
+            else
+            {
+                _targetPathFollower = null;
+            }
+        }
+        
         /// <summary>
         /// Gets the current target progress, either from the path follower or manual value.
         /// </summary>
-        /// <returns>The current progress along the path (0-1).</returns>
         private float GetTargetProgress()
         {
             if (_targetPathFollower != null)
@@ -354,33 +403,11 @@ namespace MyGame.Features.World
         }
         
         /// <summary>
-        /// Calculates the camera's target position based on the current camera mode.
+        /// Calculates the camera's target position along the path.
         /// </summary>
-        /// <returns>The world position for the camera.</returns>
         private Vector3 CalculateTargetPosition()
         {
-            switch (_cameraMode)
-            {
-                case CameraMode.FollowPath:
-                    return CalculatePathPosition();
-                    
-                case CameraMode.OrbitCenter:
-                    return CalculateOrbitPosition();
-                    
-                case CameraMode.FixedPosition:
-                    return _fixedPosition;
-                    
-                default:
-                    return _transform.position;
-            }
-        }
-        
-        /// <summary>
-        /// Calculates camera position for FollowPath mode (ahead of target on the road).
-        /// </summary>
-        private Vector3 CalculatePathPosition()
-        {
-            if (_roadGenerator == null) return _transform.position;
+            if (_pathProvider == null) return _transform.position;
             
             float targetProgress = GetTargetProgress();
             
@@ -396,65 +423,20 @@ namespace MyGame.Features.World
             CurrentProgress = cameraProgress;
             
             // Get point on path
-            var point = _roadGenerator.GetPointAlongPath(cameraProgress);
+            var point = _pathProvider.GetPointAlongPath(cameraProgress);
             if (!point.HasValue)
             {
                 return _transform.position;
             }
             
-            var roadPoint = point.Value;
+            var pathPoint = point.Value;
             
             // Calculate position with offsets
-            Vector3 position = roadPoint.Position;
-            position += roadPoint.Up * _heightOffset;
-            position += roadPoint.Right * _lateralOffset;
+            Vector3 position = pathPoint.Position;
+            position += pathPoint.Up * _heightOffset;
+            position += pathPoint.Right * _lateralOffset;
             
             return position;
-        }
-        
-        /// <summary>
-        /// Calculates camera position for OrbitCenter mode (inside circle looking out).
-        /// Camera orbits around a center point, always facing the target.
-        /// </summary>
-        private Vector3 CalculateOrbitPosition()
-        {
-            if (_target == null) return _transform.position;
-            
-            // Get the orbit center position
-            Vector3 centerPos = _orbitCenter != null ? _orbitCenter.position : transform.position;
-            
-            // Calculate direction from center to target
-            Vector3 targetPos = _target.position;
-            Vector3 directionToTarget = (targetPos - centerPos).normalized;
-            
-            // Handle case where target is at center
-            if (directionToTarget.sqrMagnitude < 0.001f)
-            {
-                directionToTarget = Vector3.forward;
-            }
-            
-            // Flatten direction to horizontal plane for orbit calculation
-            Vector3 flatDirection = new Vector3(directionToTarget.x, 0f, directionToTarget.z).normalized;
-            if (flatDirection.sqrMagnitude < 0.001f)
-            {
-                flatDirection = Vector3.forward;
-            }
-            
-            // Camera position is on the OPPOSITE side of center from target (looking through center at target)
-            // This puts the camera INSIDE a circular road, looking OUT at the target
-            Vector3 cameraPos = centerPos - flatDirection * _orbitRadius;
-            
-            // Apply height
-            if (_matchTargetHeight)
-            {
-                cameraPos.y = targetPos.y + _orbitHeightOffset;
-            }
-            else
-            {
-                cameraPos.y = centerPos.y + _orbitHeightOffset;
-            }
-            
-            return cameraPos;
         }
         
         /// <summary>
@@ -483,9 +465,8 @@ namespace MyGame.Features.World
         }
         
         /// <summary>
-        /// Calculates the target rotation for the camera (looking at target with tilt and framing applied).
+        /// Calculates the target rotation for the camera.
         /// </summary>
-        /// <returns>The target rotation.</returns>
         private Quaternion CalculateTargetRotation()
         {
             if (_target == null) return _transform.rotation;
@@ -493,15 +474,13 @@ namespace MyGame.Features.World
             // Look at the target with height offset
             Vector3 lookAtPos = _target.position + Vector3.up * _lookAtHeightOffset;
             
-            // Apply framing offset - shift the look-at point to frame the target off-center
+            // Apply framing offset
             if (Mathf.Abs(_framingOffsetX) > 0.001f || Mathf.Abs(_framingOffsetY) > 0.001f)
             {
-                // Calculate right and up vectors relative to camera-to-target direction
                 Vector3 toTarget = (lookAtPos - _transform.position).normalized;
                 Vector3 right = Vector3.Cross(Vector3.up, toTarget).normalized;
                 Vector3 up = Vector3.Cross(toTarget, right).normalized;
                 
-                // Offset the look-at point (negative because we want target to appear on that side)
                 float distance = Vector3.Distance(_transform.position, lookAtPos);
                 lookAtPos -= right * (_framingOffsetX * distance);
                 lookAtPos -= up * (_framingOffsetY * distance);
@@ -541,8 +520,6 @@ namespace MyGame.Features.World
         /// <summary>
         /// Applies roll (tilt) and pitch offset to create downhill illusion.
         /// </summary>
-        /// <param name="baseRotation">The base look-at rotation.</param>
-        /// <returns>The rotation with tilt applied.</returns>
         private Quaternion ApplyTiltToRotation(Quaternion baseRotation)
         {
             if (Mathf.Approximately(_rollAngle, 0f) && Mathf.Approximately(_pitchOffset, 0f))
@@ -550,8 +527,6 @@ namespace MyGame.Features.World
                 return baseRotation;
             }
             
-            // Apply pitch offset (rotate around local X axis) and roll (rotate around local Z axis)
-            // Order: base rotation -> pitch -> roll
             Quaternion pitchRotation = Quaternion.AngleAxis(_pitchOffset, Vector3.right);
             Quaternion rollRotation = Quaternion.AngleAxis(_rollAngle, Vector3.forward);
             
@@ -578,7 +553,7 @@ namespace MyGame.Features.World
             Gizmos.color = _gizmoColor;
             Gizmos.DrawWireSphere(t.position, _gizmoSize * 0.5f);
             
-            // Draw forward direction (where camera is looking)
+            // Draw forward direction
             Gizmos.color = Color.blue;
             Gizmos.DrawRay(t.position, t.forward * _gizmoSize * 2f);
             
@@ -589,7 +564,6 @@ namespace MyGame.Features.World
                 Vector3 lookAtPos = _target.position + Vector3.up * _lookAtHeightOffset;
                 Gizmos.DrawLine(t.position, lookAtPos);
                 
-                // Draw look-at point
                 Gizmos.color = Color.yellow;
                 Gizmos.DrawWireSphere(lookAtPos, _gizmoSize * 0.3f);
             }
@@ -598,7 +572,9 @@ namespace MyGame.Features.World
         private void OnDrawGizmosSelected()
         {
             if (!_showGizmos) return;
-            if (_roadGenerator == null) return;
+            
+            ResolvePathProvider();
+            if (_pathProvider == null || !_pathProvider.HasValidPath) return;
             
             Transform t = _transform != null ? _transform : transform;
             
@@ -607,31 +583,31 @@ namespace MyGame.Features.World
             float cameraProgress = targetProgress + _progressOffset;
             if (cameraProgress > 1f) cameraProgress -= 1f;
             
-            var point = _roadGenerator.GetPointAlongPath(cameraProgress);
+            var point = _pathProvider.GetPointAlongPath(cameraProgress);
             if (point.HasValue)
             {
-                var roadPoint = point.Value;
-                Vector3 pathPosition = roadPoint.Position;
+                var pathPoint = point.Value;
+                Vector3 pathPosition = pathPoint.Position;
                 
-                // Draw connection to road surface
+                // Draw connection to path surface
                 Gizmos.color = new Color(0f, 1f, 0f, 0.5f);
                 Gizmos.DrawLine(t.position, pathPosition);
                 
-                // Draw road point
+                // Draw path point
                 Gizmos.color = Color.green;
                 Gizmos.DrawWireSphere(pathPosition, _gizmoSize * 0.3f);
                 
-                // Draw up/right vectors at road point
+                // Draw up/right vectors at path point
                 Gizmos.color = Color.green;
-                Gizmos.DrawRay(pathPosition, roadPoint.Up * _gizmoSize);
+                Gizmos.DrawRay(pathPosition, pathPoint.Up * _gizmoSize);
                 Gizmos.color = Color.red;
-                Gizmos.DrawRay(pathPosition, roadPoint.Right * _gizmoSize);
+                Gizmos.DrawRay(pathPosition, pathPoint.Right * _gizmoSize);
             }
             
             // Draw target's position on path if available
             if (_targetPathFollower != null)
             {
-                var targetPoint = _roadGenerator.GetPointAlongPath(targetProgress);
+                var targetPoint = _pathProvider.GetPointAlongPath(targetProgress);
                 if (targetPoint.HasValue)
                 {
                     Gizmos.color = Color.magenta;

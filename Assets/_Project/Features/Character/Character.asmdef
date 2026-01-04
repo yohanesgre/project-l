@@ -1,7 +1,10 @@
 {
     "name": "Features.Character",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:f98f25741fbda2d75b9dacd69327f85f",
+        "GUID:4708f2795463878ba84348f1c9f7580d"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
