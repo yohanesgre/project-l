@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using MyGame.Core;
 
 namespace MyGame.Features.Character
@@ -43,6 +44,7 @@ namespace MyGame.Features.Character
         
         [Header("Path Reference")]
         [Tooltip("The path provider component. Can be a CustomPath, RoadGenerator, or any IPathProvider.")]
+        [RequireInterface(typeof(IPathProvider))]
         [SerializeField] private Component _pathProviderComponent;
         
         [Header("Movement Settings")]
@@ -85,6 +87,19 @@ namespace MyGame.Features.Character
         [Range(0f, 0.5f)]
         [SerializeField] private float _positionSmoothTime = 0.05f;
         
+        [Tooltip("Maximum distance the follower can move in a single frame to prevent overshoot on sharp turns.")]
+        [SerializeField] private float _maxDistancePerFrame = 10f;
+        
+        [Header("Events")]
+        [Tooltip("Invoked when the follower reaches the end of the path (Stop mode only).")]
+        [SerializeField] private UnityEvent _onPathComplete = new UnityEvent();
+        
+        [Tooltip("Invoked when the follower reverses direction (PingPong mode or manual reverse).")]
+        [SerializeField] private UnityEvent _onDirectionReverse = new UnityEvent();
+        
+        [Tooltip("Invoked whenever the progress value changes. Passes the new progress value (0-1).")]
+        [SerializeField] private UnityEvent<float> _onProgressChanged = new UnityEvent<float>();
+        
         #endregion
 
         #region Private Fields
@@ -94,7 +109,6 @@ namespace MyGame.Features.Character
         private float _pathLength;
         private int _direction = 1;
         private bool _hasValidPath;
-        private bool _pendingAutoStart;
         
         // Smoothing state
         private Vector3 _currentVelocity;
@@ -183,6 +197,21 @@ namespace MyGame.Features.Character
             set => _rotationMode = value;
         }
         
+        /// <summary>
+        /// Event invoked when the follower reaches the end of the path (Stop mode only).
+        /// </summary>
+        public UnityEvent OnPathComplete => _onPathComplete;
+        
+        /// <summary>
+        /// Event invoked when the follower reverses direction (PingPong mode or manual reverse).
+        /// </summary>
+        public UnityEvent OnDirectionReverse => _onDirectionReverse;
+        
+        /// <summary>
+        /// Event invoked whenever the progress value changes. Passes the new progress value (0-1).
+        /// </summary>
+        public UnityEvent<float> OnProgressChanged => _onProgressChanged;
+        
         #endregion
 
         #region Unity Lifecycle
@@ -211,23 +240,13 @@ namespace MyGame.Features.Character
                 }
                 else
                 {
-                    _pendingAutoStart = true;
+                    StartCoroutine(WaitForValidPathAndStart());
                 }
             }
         }
         
         private void Update()
         {
-            if (_pendingAutoStart && !_isFollowing)
-            {
-                CachePathLength();
-                if (_hasValidPath)
-                {
-                    _pendingAutoStart = false;
-                    StartFollowing();
-                }
-            }
-            
             if (_isFollowing)
             {
                 UpdateMovement();
@@ -304,8 +323,14 @@ namespace MyGame.Features.Character
         /// </summary>
         public void SetProgress(float t)
         {
+            float oldProgress = _progress;
             _progress = Mathf.Clamp01(t);
             ApplyPositionImmediate();
+            
+            if (Mathf.Abs(_progress - oldProgress) > 0.0001f)
+            {
+                _onProgressChanged?.Invoke(_progress);
+            }
         }
         
         /// <summary>
@@ -313,9 +338,15 @@ namespace MyGame.Features.Character
         /// </summary>
         public void ResetProgress()
         {
+            float oldProgress = _progress;
             _progress = _startingProgress;
             _direction = 1;
             ApplyPositionImmediate();
+            
+            if (Mathf.Abs(_progress - oldProgress) > 0.0001f)
+            {
+                _onProgressChanged?.Invoke(_progress);
+            }
         }
         
         /// <summary>
@@ -324,6 +355,7 @@ namespace MyGame.Features.Character
         public void ReverseDirection()
         {
             _direction *= -1;
+            _onDirectionReverse?.Invoke();
         }
         
         /// <summary>
@@ -369,18 +401,44 @@ namespace MyGame.Features.Character
             _hasValidPath = _pathProvider.HasValidPath && _pathLength > 0f;
         }
         
+        private System.Collections.IEnumerator WaitForValidPathAndStart()
+        {
+            // Wait until we have a valid path
+            while (!_hasValidPath && _autoStartFollowing)
+            {
+                yield return null;
+                CachePathLength();
+            }
+            
+            // Start following if we got a valid path
+            if (_hasValidPath && _autoStartFollowing && !_isFollowing)
+            {
+                StartFollowing();
+            }
+        }
+        
         private void UpdateMovement()
         {
             if (!_hasValidPath || _pathLength <= 0f) return;
             
-            float progressDelta = (_speed * Time.deltaTime) / _pathLength;
+            // Cache deltaTime for performance
+            float deltaTime = Time.deltaTime;
+            
+            float oldProgress = _progress;
+            float progressDelta = (_speed * deltaTime) / _pathLength;
             _progress += progressDelta * _direction;
             
-            HandleEndOfPath();
-            ApplyPositionAndRotation();
+            HandleEndOfPath(deltaTime);
+            ApplyPositionAndRotation(deltaTime);
+            
+            // Invoke progress changed event if progress actually changed
+            if (Mathf.Abs(_progress - oldProgress) > 0.0001f)
+            {
+                _onProgressChanged?.Invoke(_progress);
+            }
         }
         
-        private void HandleEndOfPath()
+        private void HandleEndOfPath(float deltaTime)
         {
             switch (_endBehavior)
             {
@@ -389,11 +447,13 @@ namespace MyGame.Features.Character
                     {
                         _progress = 1f;
                         _isFollowing = false;
+                        _onPathComplete?.Invoke();
                     }
                     else if (_progress <= 0f)
                     {
                         _progress = 0f;
                         _isFollowing = false;
+                        _onPathComplete?.Invoke();
                     }
                     break;
                     
@@ -413,11 +473,13 @@ namespace MyGame.Features.Character
                     {
                         _progress = 1f - (_progress - 1f);
                         _direction = -1;
+                        _onDirectionReverse?.Invoke();
                     }
                     else if (_progress <= 0f)
                     {
                         _progress = -_progress;
                         _direction = 1;
+                        _onDirectionReverse?.Invoke();
                     }
                     break;
             }
@@ -425,7 +487,7 @@ namespace MyGame.Features.Character
             _progress = Mathf.Clamp01(_progress);
         }
         
-        private void ApplyPositionAndRotation()
+        private void ApplyPositionAndRotation(float deltaTime)
         {
             if (_pathProvider == null) return;
             
@@ -453,10 +515,19 @@ namespace MyGame.Features.Character
                     ref _currentVelocity,
                     _positionSmoothTime
                 );
+                
+                // Prevent overshoot on sharp turns by clamping max distance per frame
+                Vector3 movement = _smoothedPosition - _transform.position;
+                float maxDistance = _maxDistancePerFrame * deltaTime;
+                if (movement.sqrMagnitude > maxDistance * maxDistance)
+                {
+                    _smoothedPosition = _transform.position + movement.normalized * maxDistance;
+                }
+                
                 _transform.position = _smoothedPosition;
             }
             
-            ApplyRotation(pathPoint);
+            ApplyRotation(pathPoint, deltaTime);
         }
         
         private void ApplyPositionImmediate()
@@ -484,7 +555,7 @@ namespace MyGame.Features.Character
             ApplyRotationImmediate(pathPoint);
         }
         
-        private void ApplyRotation(PathPoint pathPoint)
+        private void ApplyRotation(PathPoint pathPoint, float deltaTime)
         {
             if (_rotationMode == RotationMode.None) return;
             
@@ -495,7 +566,7 @@ namespace MyGame.Features.Character
                 _transform.rotation = Quaternion.Slerp(
                     _transform.rotation,
                     targetRotation,
-                    _rotationSpeed * Time.deltaTime
+                    _rotationSpeed * deltaTime
                 );
             }
             else
@@ -552,7 +623,12 @@ namespace MyGame.Features.Character
         {
             if (!_showGizmos) return;
             
-            ResolvePathProvider();
+            // Use cached path provider instead of resolving each frame
+            if (_pathProvider == null && _pathProviderComponent != null)
+            {
+                ResolvePathProvider();
+            }
+            
             if (_pathProvider == null) return;
             
             var point = _pathProvider.GetPointAlongPath(_progress);
@@ -582,7 +658,12 @@ namespace MyGame.Features.Character
         {
             if (!_showGizmos) return;
             
-            ResolvePathProvider();
+            // Use cached path provider instead of resolving each frame
+            if (_pathProvider == null && _pathProviderComponent != null)
+            {
+                ResolvePathProvider();
+            }
+            
             if (_pathProvider == null) return;
             
             var point = _pathProvider.GetPointAlongPath(_progress);
