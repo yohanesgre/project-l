@@ -412,7 +412,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   autoAdvanceDelay: 0
-  eventProcessor: {fileID: 0}
+  autoTransitionToNextScene: 1
+  sceneTransitionDelay: 1
 --- !u!1 &1318729361
 GameObject:
   m_ObjectHideFlags: 0
