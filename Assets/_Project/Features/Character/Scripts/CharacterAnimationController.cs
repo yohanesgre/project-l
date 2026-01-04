@@ -29,6 +29,9 @@ namespace MyGame.Features.Character
         [Tooltip("How quickly the speed parameter interpolates to the target value.")]
         [SerializeField] private float _speedSmoothTime = 0.1f;
         
+        [Tooltip("Maximum speed value for animation normalization. Speed will be clamped to 0-1 range based on this value.")]
+        [SerializeField] private float _maxSpeed = 10f;
+        
         #endregion
 
         #region Private Fields
@@ -40,6 +43,10 @@ namespace MyGame.Features.Character
         private float _speedVelocity;
         private bool _hasAnimator;
         private bool _wasDriving;
+        
+        // Parameter validation
+        private bool _hasDrivingParameter;
+        private bool _hasSpeedParameter;
         
         #endregion
 
@@ -79,6 +86,9 @@ namespace MyGame.Features.Character
             // Cache parameter hashes for performance
             _isDrivingHash = Animator.StringToHash(_isDrivingParameter);
             _speedHash = Animator.StringToHash(_speedParameter);
+            
+            // Validate animator parameters exist
+            ValidateAnimatorParameters();
         }
         
         private void Start()
@@ -103,7 +113,15 @@ namespace MyGame.Features.Character
             {
                 _isDrivingHash = Animator.StringToHash(_isDrivingParameter);
                 _speedHash = Animator.StringToHash(_speedParameter);
+                
+                if (Application.isPlaying)
+                {
+                    ValidateAnimatorParameters();
+                }
             }
+            
+            // Ensure max speed is positive
+            _maxSpeed = Mathf.Max(0.1f, _maxSpeed);
         }
         
         #endregion
@@ -131,6 +149,7 @@ namespace MyGame.Features.Character
             {
                 _isDrivingHash = Animator.StringToHash(_isDrivingParameter);
                 _speedHash = Animator.StringToHash(_speedParameter);
+                ValidateAnimatorParameters();
                 UpdateAnimationState(true);
             }
         }
@@ -139,34 +158,89 @@ namespace MyGame.Features.Character
 
         #region Private Methods
         
+        /// <summary>
+        /// Validates that the required animator parameters exist in the animator controller.
+        /// </summary>
+        private void ValidateAnimatorParameters()
+        {
+            if (_animator == null || _animator.runtimeAnimatorController == null)
+            {
+                _hasDrivingParameter = false;
+                _hasSpeedParameter = false;
+                return;
+            }
+            
+            // Check for driving parameter
+            _hasDrivingParameter = HasAnimatorParameter(_isDrivingParameter, AnimatorControllerParameterType.Bool);
+            if (!_hasDrivingParameter)
+            {
+                Debug.LogWarning($"CharacterAnimationController: Animator parameter '{_isDrivingParameter}' (Bool) not found in controller '{_animator.runtimeAnimatorController.name}'.", this);
+            }
+            
+            // Check for speed parameter (only if enabled)
+            if (_useSpeedParameter)
+            {
+                _hasSpeedParameter = HasAnimatorParameter(_speedParameter, AnimatorControllerParameterType.Float);
+                if (!_hasSpeedParameter)
+                {
+                    Debug.LogWarning($"CharacterAnimationController: Animator parameter '{_speedParameter}' (Float) not found in controller '{_animator.runtimeAnimatorController.name}'.", this);
+                }
+            }
+            else
+            {
+                _hasSpeedParameter = false;
+            }
+        }
+        
+        /// <summary>
+        /// Checks if an animator parameter exists with the specified name and type.
+        /// </summary>
+        private bool HasAnimatorParameter(string parameterName, AnimatorControllerParameterType parameterType)
+        {
+            foreach (var parameter in _animator.parameters)
+            {
+                if (parameter.name == parameterName && parameter.type == parameterType)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         private void UpdateAnimationState(bool immediate)
         {
             if (_pathFollower == null) return;
             
             bool isDriving = _pathFollower.IsFollowing;
             
-            // Update driving state
+            // Update driving state (only if parameter exists)
             if (isDriving != _wasDriving || immediate)
             {
-                _animator.SetBool(_isDrivingHash, isDriving);
+                if (_hasDrivingParameter)
+                {
+                    _animator.SetBool(_isDrivingHash, isDriving);
+                }
                 _wasDriving = isDriving;
             }
             
-            // Update speed parameter if enabled
-            if (_useSpeedParameter)
+            // Update speed parameter if enabled and exists
+            if (_useSpeedParameter && _hasSpeedParameter)
             {
                 float targetSpeed = isDriving ? _pathFollower.Speed : 0f;
                 
+                // Normalize speed to 0-1 range based on max speed to prevent animation popping
+                float normalizedSpeed = Mathf.Clamp01(targetSpeed / _maxSpeed);
+                
                 if (immediate)
                 {
-                    _currentSpeed = targetSpeed;
+                    _currentSpeed = normalizedSpeed;
                     _speedVelocity = 0f;
                 }
                 else
                 {
                     _currentSpeed = Mathf.SmoothDamp(
                         _currentSpeed,
-                        targetSpeed,
+                        normalizedSpeed,
                         ref _speedVelocity,
                         _speedSmoothTime
                     );

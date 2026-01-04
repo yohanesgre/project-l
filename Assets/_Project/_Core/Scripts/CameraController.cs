@@ -14,12 +14,14 @@ namespace MyGame.Core
         
         [Header("References")]
         [Tooltip("The path provider that defines the camera's path (CustomPath, RoadGenerator, etc.).")]
+        [RequireInterface(typeof(IPathProvider))]
         [SerializeField] private Component _pathProviderComponent;
         
         [Tooltip("The target Transform to look at (e.g., the cyclist/character).")]
         [SerializeField] private Transform _target;
         
         [Tooltip("Optional: Reference to a path follower component on the target for synced movement.")]
+        [RequireInterface(typeof(IPathFollower))]
         [SerializeField] private Component _targetPathFollowerComponent;
         
         [Header("Path Position Settings")]
