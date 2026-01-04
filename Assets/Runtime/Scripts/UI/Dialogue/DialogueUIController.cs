@@ -1,6 +1,9 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Runtime
 {
@@ -13,14 +16,18 @@ namespace Runtime
         [Header("UI Documents")]
         [SerializeField] private UIDocument dialogueDocument;
         [SerializeField] private UIDocument choiceDocument;
-        [SerializeField] private UIDocument historyDocument;
         [SerializeField] private UIDocument settingsDocument;
 
         [Header("References")]
         [SerializeField] private TypewriterEffect typewriterEffect;
+        [SerializeField] private HistoryUIController _historyUI;
 
-        [Header("Settings")]
-        [SerializeField] private bool showPointerOnLeft = true;
+        [Header("Animation")]
+        [Tooltip("Duration of show/hide animation in seconds")]
+        [SerializeField] private float animationDuration = 0.3f;
+
+        [Tooltip("Slide distance for animation (pixels)")]
+        [SerializeField] private float slideDistance = 50f;
 
         // Events
         public event Action OnAutoToggled;
@@ -32,7 +39,6 @@ namespace Runtime
         // UI Elements - Dialogue Panel
         private VisualElement _root;
         private VisualElement _dialogueContainer;
-        private VisualElement _dialoguePointer;
         private Label _speakerName;
         private Label _dialogueText;
         private Label _continueIndicator;
@@ -43,13 +49,27 @@ namespace Runtime
         private Button _btnLog;
         private Button _btnSettings;
 
+        // UI Elements - History Panel
+        // Removed internal history elements
+
         // State
         private bool _isAutoEnabled;
         private bool _isVisible;
+        private bool _isAnimating;
         private DialogueManager _dialogueManager;
+        private Coroutine _animationCoroutine;
 
         private void Awake()
         {
+            if (_historyUI == null)
+            {
+                _historyUI = FindObjectOfType<HistoryUIController>();
+                if (_historyUI == null)
+                {
+                   Debug.LogWarning("[DialogueUIController] HistoryUIController not found in scene. Log button will not work.");
+                }
+            }
+
             if (typewriterEffect == null)
             {
                 typewriterEffect = GetComponent<TypewriterEffect>();
@@ -64,11 +84,18 @@ namespace Runtime
         {
             InitializeUI();
             SubscribeToDialogueManager();
+            SubscribeToHistoryUI();
+        }
+
+        private void Update()
+        {
+            HandleInput();
         }
 
         private void OnDestroy()
         {
             UnsubscribeFromDialogueManager();
+            UnsubscribeFromHistoryUI();
             UnregisterCallbacks();
         }
 
@@ -89,7 +116,6 @@ namespace Runtime
 
             // Get dialogue elements
             _dialogueContainer = _root.Q<VisualElement>("dialogue-container");
-            _dialoguePointer = _root.Q<VisualElement>("dialogue-pointer");
             _speakerName = _root.Q<Label>("speaker-name");
             _dialogueText = _root.Q<Label>("dialogue-text");
             _continueIndicator = _root.Q<Label>("continue-indicator");
@@ -146,6 +172,19 @@ namespace Runtime
                 _dialogueManager.OnDialogueChanged += OnDialogueChanged;
                 _dialogueManager.OnDialogueEnded += OnDialogueEnded;
                 _dialogueManager.OnSpeakerChanged += OnSpeakerChanged;
+                _dialogueManager.OnSceneTransitionStart += OnSceneTransitionStart;
+
+                // If dialogue is already active (e.g., GameManager started before us), show UI now
+                if (_dialogueManager.IsDialogueActive && _dialogueManager.CurrentEntry != null)
+                {
+                    Debug.Log("[DialogueUIController] Dialogue already active, showing UI");
+                    Show();
+                    DisplayDialogue(_dialogueManager.CurrentEntry.Speaker, _dialogueManager.CurrentEntry.DialogueText);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[DialogueUIController] DialogueManager.Instance is null");
             }
         }
 
@@ -157,12 +196,44 @@ namespace Runtime
                 _dialogueManager.OnDialogueChanged -= OnDialogueChanged;
                 _dialogueManager.OnDialogueEnded -= OnDialogueEnded;
                 _dialogueManager.OnSpeakerChanged -= OnSpeakerChanged;
+                _dialogueManager.OnSceneTransitionStart -= OnSceneTransitionStart;
             }
 
             if (typewriterEffect != null)
             {
                 typewriterEffect.OnTypewriterStarted -= OnTypewriterStarted;
                 typewriterEffect.OnTypewriterCompleted -= OnTypewriterCompleted;
+            }
+        }
+
+        private void SubscribeToHistoryUI()
+        {
+            if (_historyUI != null)
+            {
+                _historyUI.OnHistoryOpened += OnHistoryOpened;
+                _historyUI.OnHistoryClosed += OnHistoryClosed;
+            }
+        }
+
+        private void UnsubscribeFromHistoryUI()
+        {
+            if (_historyUI != null)
+            {
+                _historyUI.OnHistoryOpened -= OnHistoryOpened;
+                _historyUI.OnHistoryClosed -= OnHistoryClosed;
+            }
+        }
+
+        private void OnHistoryOpened()
+        {
+            Hide(true); // Hide immediately when history opens
+        }
+
+        private void OnHistoryClosed()
+        {
+            if (_dialogueManager != null && _dialogueManager.IsDialogueActive)
+            {
+                Show();
             }
         }
 
@@ -175,11 +246,13 @@ namespace Runtime
 
         private void OnDialogueChanged(DialogueEntry entry)
         {
+            Show(); // Ensure UI is visible (e.g., after scene transition)
             DisplayDialogue(entry.Speaker, entry.DialogueText);
         }
 
         private void OnDialogueEnded()
         {
+            Debug.Log("[DialogueUIController] OnDialogueEnded event received");
             Hide();
         }
 
@@ -188,35 +261,120 @@ namespace Runtime
             SetSpeaker(speaker);
         }
 
+        private void OnSceneTransitionStart()
+        {
+            Debug.Log("[DialogueUIController] Scene transition starting, hiding UI");
+            Hide();
+        }
+
         #endregion
 
         #region Public Methods
 
         /// <summary>
-        /// Shows the dialogue panel.
+        /// Shows the dialogue panel with animation.
         /// </summary>
         public void Show()
         {
-            if (_dialogueContainer != null)
+            if (_dialogueContainer == null || _isVisible) return;
+
+            if (_animationCoroutine != null)
             {
-                _dialogueContainer.RemoveFromClassList("hidden");
-                _dialogueContainer.AddToClassList("visible");
-                _isVisible = true;
+                StopCoroutine(_animationCoroutine);
             }
+
+            _animationCoroutine = StartCoroutine(AnimateShow());
         }
 
+
         /// <summary>
-        /// Hides the dialogue panel.
+        /// Hides the dialogue panel with optional animation.
         /// </summary>
-        public void Hide()
+        /// <param name="immediate">If true, skips animation.</param>
+        public void Hide(bool immediate = false)
         {
-            if (_dialogueContainer != null)
+            Debug.Log($"[DialogueUIController] Hide(immediate={immediate}) called");
+            
+            if (_dialogueContainer == null) return;
+
+            // Stop any existing animation
+            if (_animationCoroutine != null)
+            {
+                StopCoroutine(_animationCoroutine);
+            }
+
+            _isVisible = false;
+
+            if (immediate)
             {
                 _dialogueContainer.RemoveFromClassList("visible");
                 _dialogueContainer.AddToClassList("hidden");
-                _isVisible = false;
+                _dialogueContainer.style.opacity = 0f; // Ensure hidden
+            }
+            else
+            {
+                _animationCoroutine = StartCoroutine(AnimateHide());
             }
         }
+
+        private System.Collections.IEnumerator AnimateShow()
+        {
+            _isAnimating = true;
+            _isVisible = true;
+
+            _dialogueContainer.RemoveFromClassList("hidden");
+            _dialogueContainer.AddToClassList("visible");
+
+            // Start from below and fade in
+            float elapsed = 0f;
+            while (elapsed < animationDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / animationDuration);
+                float eased = EaseOutCubic(t);
+
+                float yOffset = Mathf.Lerp(slideDistance, 0f, eased);
+                _dialogueContainer.style.translate = new Translate(0, yOffset);
+                _dialogueContainer.style.opacity = eased;
+
+                yield return null;
+            }
+
+            _dialogueContainer.style.translate = new Translate(0, 0);
+            _dialogueContainer.style.opacity = 1f;
+            _isAnimating = false;
+        }
+
+        private System.Collections.IEnumerator AnimateHide()
+        {
+            _isAnimating = true;
+
+            // Slide down and fade out
+            float elapsed = 0f;
+            while (elapsed < animationDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / animationDuration);
+                float eased = EaseInCubic(t);
+
+                float yOffset = Mathf.Lerp(0f, slideDistance, eased);
+                _dialogueContainer.style.translate = new Translate(0, yOffset);
+                _dialogueContainer.style.opacity = 1f - eased;
+
+                yield return null;
+            }
+
+            _dialogueContainer.RemoveFromClassList("visible");
+            _dialogueContainer.AddToClassList("hidden");
+            _dialogueContainer.style.translate = new Translate(0, 0);
+            _dialogueContainer.style.opacity = 1f;
+
+            _isVisible = false;
+            _isAnimating = false;
+        }
+
+        private float EaseOutCubic(float t) => 1f - Mathf.Pow(1f - t, 3f);
+        private float EaseInCubic(float t) => t * t * t;
 
         /// <summary>
         /// Displays dialogue with typewriter effect.
@@ -261,24 +419,6 @@ namespace Runtime
                 _speakerName.text = speaker;
                 _speakerName.RemoveFromClassList("speaker-name--narrator");
                 _speakerName.style.display = DisplayStyle.Flex;
-            }
-        }
-
-        /// <summary>
-        /// Sets the pointer position (left or right).
-        /// </summary>
-        /// <param name="isLeft">True for left position</param>
-        public void SetPointerPosition(bool isLeft)
-        {
-            if (_dialoguePointer == null) return;
-
-            if (isLeft)
-            {
-                _dialoguePointer.RemoveFromClassList("dialogue-pointer--right");
-            }
-            else
-            {
-                _dialoguePointer.AddToClassList("dialogue-pointer--right");
             }
         }
 
@@ -356,6 +496,13 @@ namespace Runtime
         {
             evt.StopPropagation();
             OnLogRequested?.Invoke();
+            
+            OnLogRequested?.Invoke();
+            
+            if (_historyUI != null)
+            {
+                _historyUI.Toggle();
+            }
         }
 
         private void OnSettingsClick(ClickEvent evt)
@@ -427,6 +574,29 @@ namespace Runtime
             else
             {
                 _btnAuto.RemoveFromClassList("control-button--active");
+            }
+        }
+
+        private void HandleInput()
+        {
+            if (!_isVisible || _dialogueManager == null) return;
+
+            var keyboard = Keyboard.current;
+            if (keyboard == null) return;
+
+            // Space or Enter to advance dialogue
+            if (keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame)
+            {
+                // If typing, skip to end
+                if (typewriterEffect != null && typewriterEffect.IsTyping)
+                {
+                    typewriterEffect.ShowAllText();
+                }
+                else
+                {
+                    // Advance to next dialogue
+                    _dialogueManager.AdvanceDialogue();
+                }
             }
         }
 

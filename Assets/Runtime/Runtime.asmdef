@@ -1,7 +1,9 @@
 {
     "name": "Runtime",
     "rootNamespace": "Runtime",
-    "references": [],
+    "references": [
+        "Unity.InputSystem"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

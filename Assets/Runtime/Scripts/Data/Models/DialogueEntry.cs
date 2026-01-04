@@ -38,6 +38,9 @@ namespace Runtime
         [Tooltip("Developer notes (ignored at runtime)")]
         public string Notes;
 
+        [Tooltip("Source sheet tab this entry was imported from")]
+        public string SourceTab;
+
         /// <summary>
         /// Checks if this entry has any events to process.
         /// </summary>

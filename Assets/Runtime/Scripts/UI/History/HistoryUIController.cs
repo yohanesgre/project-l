@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 namespace Runtime
@@ -75,11 +76,17 @@ namespace Runtime
                 return;
             }
 
+            // Ensure History is on top of other UI
+            // historyDocument.sortingOrder = 900;
+
             _historyContainer = _root.Q<VisualElement>("history-container");
             _historyTitle = _root.Q<Label>("history-title");
             _closeButton = _root.Q<Button>("history-close");
             _historyScroll = _root.Q<ScrollView>("history-scroll");
             _historyList = _root.Q<VisualElement>("history-list");
+
+            if (_closeButton == null) Debug.LogError("[HistoryUIController] Close button 'history-close' not found!");
+            else Debug.Log("[HistoryUIController] Close button found.");
 
             RegisterCallbacks();
 
@@ -89,7 +96,10 @@ namespace Runtime
 
         private void RegisterCallbacks()
         {
-            _closeButton?.RegisterCallback<ClickEvent>(OnCloseClick);
+            if (_closeButton != null)
+            {
+                _closeButton.clicked += OnCloseButtonClicked; // Use clicked event for Button
+            }
             
             // Close on background click
             _historyContainer?.RegisterCallback<ClickEvent>(OnContainerClick);
@@ -100,7 +110,10 @@ namespace Runtime
 
         private void UnregisterCallbacks()
         {
-            _closeButton?.UnregisterCallback<ClickEvent>(OnCloseClick);
+            if (_closeButton != null)
+            {
+                _closeButton.clicked -= OnCloseButtonClicked;
+            }
             _historyContainer?.UnregisterCallback<ClickEvent>(OnContainerClick);
             _historyContainer?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
         }
@@ -345,8 +358,16 @@ namespace Runtime
 
         #region UI Event Handlers
 
+        private void OnCloseButtonClicked()
+        {
+            Debug.Log("[HistoryUIController] Close button clicked");
+            Hide();
+        }
+
         private void OnCloseClick(ClickEvent evt)
         {
+            // Fallback if needed, but 'clicked' should handle it
+            Debug.Log("[HistoryUIController] Close click event");
             evt.StopPropagation();
             Hide();
         }
@@ -375,8 +396,8 @@ namespace Runtime
 
         private void Update()
         {
-            // L key to toggle history (when not visible, handled by DialogueUIController)
-            if (_isVisible && Input.GetKeyDown(KeyCode.Escape))
+            // L key or Escape to toggle history (when not visible, handled by DialogueUIController)
+            if (_isVisible && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 Hide();
             }

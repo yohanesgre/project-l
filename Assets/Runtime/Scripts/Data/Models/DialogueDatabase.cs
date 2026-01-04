@@ -22,6 +22,9 @@ namespace Runtime
         [Tooltip("When this data was last imported")]
         public string ImportedAt;
 
+        [Tooltip("List of source tabs used in this import")]
+        public List<string> SourceTabs = new List<string>();
+
         [Header("Dialogue Data")]
         [Tooltip("All dialogue entries in this database")]
         public List<DialogueEntry> Entries = new List<DialogueEntry>();

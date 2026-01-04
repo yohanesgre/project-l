@@ -19,8 +19,12 @@ namespace Runtime
         [Tooltip("Auto-advance to next dialogue after delay (0 = manual advance only)")]
         [SerializeField] private float autoAdvanceDelay = 0f;
 
-        [Header("References")]
-        [SerializeField] private DialogueEventProcessor eventProcessor;
+        [Header("Scene Transition")]
+        [Tooltip("Automatically transition to next scene when current scene ends")]
+        [SerializeField] private bool autoTransitionToNextScene = true;
+
+        [Tooltip("Delay before transitioning to next scene (seconds)")]
+        [SerializeField] private float sceneTransitionDelay = 1f;
 
         // Events for UI and other systems to subscribe to
         public event Action<DialogueEntry> OnDialogueStarted;
@@ -28,41 +32,26 @@ namespace Runtime
         public event Action<List<ChoiceOption>> OnChoicesPresented;
         public event Action OnDialogueEnded;
         public event Action<string> OnSpeakerChanged;
+        public event Action<string, string> OnSceneChanged; // (fromScene, toScene)
+        public event Action OnSceneTransitionStart; // UI should hide during transition
 
         // Current state
         private DialogueDatabase _currentDatabase;
         private DialogueEntry _currentEntry;
         private bool _isDialogueActive;
         private bool _isWaitingForInput;
-        private bool _isProcessingEvents;
         private Coroutine _autoAdvanceCoroutine;
 
         // Public state access (for save/load)
         public DialogueDatabase CurrentDatabase => _currentDatabase;
         public DialogueEntry CurrentEntry => _currentEntry;
+
         public bool IsDialogueActive => _isDialogueActive;
         public bool IsWaitingForInput => _isWaitingForInput;
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-
-            // Initialize event processor if not assigned
-            if (eventProcessor == null)
-            {
-                eventProcessor = GetComponent<DialogueEventProcessor>();
-                if (eventProcessor == null)
-                {
-                    eventProcessor = gameObject.AddComponent<DialogueEventProcessor>();
-                }
-            }
         }
 
         /// <summary>
@@ -157,7 +146,7 @@ namespace Runtime
                 _autoAdvanceCoroutine = null;
             }
 
-            // Check for end of dialogue
+            // Check for end of dialogue (no more scenes)
             if (_currentEntry.IsEndOfDialogue)
             {
                 EndDialogue();
@@ -171,17 +160,60 @@ namespace Runtime
                 return;
             }
 
-            // Advance to next entry
+            // Try to advance to next entry
             var nextEntry = _currentDatabase.GetEntry(_currentEntry.NextID);
+            
+            // If no next entry, try to go to next scene
             if (nextEntry == null)
             {
-                Debug.LogError($"[DialogueManager] Next entry '{_currentEntry.NextID}' not found");
-                EndDialogue();
+                if (autoTransitionToNextScene)
+                {
+                    TryTransitionToNextScene();
+                }
+                else
+                {
+                    Debug.LogWarning($"[DialogueManager] No next entry and auto-transition disabled");
+                    EndDialogue();
+                }
                 return;
             }
 
             _currentEntry = nextEntry;
             ProcessCurrentEntry();
+        }
+
+        /// <summary>
+        /// Attempts to transition to the next scene in the database.
+        /// </summary>
+        private void TryTransitionToNextScene()
+        {
+            var allScenes = _currentDatabase.GetAllSceneIDs();
+            var currentSceneId = _currentEntry.SceneID;
+            var currentIndex = System.Array.IndexOf(allScenes, currentSceneId);
+
+            if (currentIndex < 0 || currentIndex >= allScenes.Length - 1)
+            {
+                // No more scenes, end dialogue
+                Debug.Log("[DialogueManager] No more scenes, ending dialogue");
+                EndDialogue();
+                return;
+            }
+
+            var nextSceneId = allScenes[currentIndex + 1];
+            Debug.Log($"[DialogueManager] Auto-transitioning from '{currentSceneId}' to '{nextSceneId}' in {sceneTransitionDelay}s");
+            
+            // Signal UI to hide during transition
+            OnSceneTransitionStart?.Invoke();
+            OnSceneChanged?.Invoke(currentSceneId, nextSceneId);
+
+            if (sceneTransitionDelay > 0)
+            {
+                JumpToSceneDelayed(nextSceneId, sceneTransitionDelay);
+            }
+            else
+            {
+                JumpToScene(nextSceneId);
+            }
         }
 
         /// <summary>
@@ -261,30 +293,56 @@ namespace Runtime
         }
 
         /// <summary>
-        /// Processes the current dialogue entry (events, UI update).
+        /// Jumps to the first entry of a different scene/part.
+        /// </summary>
+        /// <param name="sceneId">The scene ID to jump to (e.g., "part_2").</param>
+        public void JumpToScene(string sceneId)
+        {
+            if (_currentDatabase == null)
+            {
+                Debug.LogError("[DialogueManager] Cannot jump: no active database");
+                return;
+            }
+
+            var firstEntry = _currentDatabase.GetFirstEntryOfScene(sceneId);
+            if (firstEntry == null)
+            {
+                Debug.LogError($"[DialogueManager] Scene '{sceneId}' not found");
+                return;
+            }
+
+            Debug.Log($"[DialogueManager] Jumping to scene: {sceneId}");
+            _currentEntry = firstEntry;
+            OnSpeakerChanged?.Invoke(_currentEntry.Speaker);
+            ProcessCurrentEntry();
+        }
+
+        /// <summary>
+        /// Jumps to a scene after a delay (for timed transitions).
+        /// </summary>
+        /// <param name="sceneId">The scene ID to jump to.</param>
+        /// <param name="delay">Delay in seconds before jumping.</param>
+        public void JumpToSceneDelayed(string sceneId, float delay)
+        {
+            StartCoroutine(JumpToSceneAfterDelay(sceneId, delay));
+        }
+
+        private IEnumerator JumpToSceneAfterDelay(string sceneId, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            JumpToScene(sceneId);
+        }
+
+        /// <summary>
+        /// Processes the current dialogue entry.
         /// </summary>
         private void ProcessCurrentEntry()
         {
             if (_currentEntry == null) return;
 
             _isWaitingForInput = false;
-            _isProcessingEvents = false;
 
-            // Process events first
-            if (_currentEntry.HasEvents && eventProcessor != null)
-            {
-                _isProcessingEvents = true;
-                eventProcessor.ProcessEventTag(_currentEntry.EventTag, OnEventsComplete);
-            }
-            else
-            {
-                FinishProcessingEntry();
-            }
-        }
-
-        private void OnEventsComplete()
-        {
-            _isProcessingEvents = false;
+            // Directly show dialogue (event processing disabled for now)
             FinishProcessingEntry();
         }
 
