@@ -177,7 +177,6 @@ namespace Runtime
                 // If dialogue is already active (e.g., GameManager started before us), show UI now
                 if (_dialogueManager.IsDialogueActive && _dialogueManager.CurrentEntry != null)
                 {
-                    Debug.Log("[DialogueUIController] Dialogue already active, showing UI");
                     Show();
                     DisplayDialogue(_dialogueManager.CurrentEntry.Speaker, _dialogueManager.CurrentEntry.DialogueText);
                 }
@@ -252,7 +251,6 @@ namespace Runtime
 
         private void OnDialogueEnded()
         {
-            Debug.Log("[DialogueUIController] OnDialogueEnded event received");
             Hide();
         }
 
@@ -263,7 +261,6 @@ namespace Runtime
 
         private void OnSceneTransitionStart()
         {
-            Debug.Log("[DialogueUIController] Scene transition starting, hiding UI");
             Hide();
         }
 
@@ -293,7 +290,6 @@ namespace Runtime
         /// <param name="immediate">If true, skips animation.</param>
         public void Hide(bool immediate = false)
         {
-            Debug.Log($"[DialogueUIController] Hide(immediate={immediate}) called");
             
             if (_dialogueContainer == null) return;
 

@@ -85,9 +85,6 @@ namespace Runtime
             _historyScroll = _root.Q<ScrollView>("history-scroll");
             _historyList = _root.Q<VisualElement>("history-list");
 
-            if (_closeButton == null) Debug.LogError("[HistoryUIController] Close button 'history-close' not found!");
-            else Debug.Log("[HistoryUIController] Close button found.");
-
             RegisterCallbacks();
 
             // Start hidden
