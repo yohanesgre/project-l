@@ -1,5 +1,9 @@
 ﻿<Solution>
+  <Project Path="Features.Dialogue.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
-  <Project Path="Runtime.csproj" />
+  <Project Path="Features.World.csproj" />
+  <Project Path="Dialogue.Editor.csproj" />
+  <Project Path="Core.csproj" />
+  <Project Path="Features.World.Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
 </Solution>

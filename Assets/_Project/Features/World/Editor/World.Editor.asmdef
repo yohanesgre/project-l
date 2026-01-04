@@ -1,0 +1,16 @@
+{
+    "name": "Features.World.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f98f25741fbda2d75b9dacd69327f85f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
