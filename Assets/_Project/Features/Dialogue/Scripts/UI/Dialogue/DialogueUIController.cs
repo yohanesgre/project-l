@@ -496,8 +496,6 @@ namespace MyGame.Features.Dialogue.UI
             evt.StopPropagation();
             OnLogRequested?.Invoke();
             
-            OnLogRequested?.Invoke();
-            
             if (_historyUI != null)
             {
                 _historyUI.Toggle();
