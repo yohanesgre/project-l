@@ -14,515 +14,1463 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SourceSheetName: DialogueDatabase
   SourceURL: https://docs.google.com/spreadsheets/d/1I9rRKLTJUuA9M6UL2kKmU7NVV46pLf9A9YuRQmQcung/edit?hl=id&gid=1892308603#gid=1892308603
-  ImportedAt: 2026-01-04 19:47:16
+  ImportedAt: 2026-01-04 23:51:49
   SourceTabs:
   - Dialogue Part 1
   - Dialogue Part 2
   - Dialogue Part 3
+  - Dialogue Part 4
+  - Dialogue Part 5
+  - Dialogue Part 6
+  - Dialogue Last Part
   Entries:
-  - TextID: part_1.1
-    SceneID: part_1
+  - TextID: T01_01
+    SceneID: S01
     Order: 1
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Ke mana kali ini?
+    Expression: 
+    DialogueText: Where to this time?
     EventTag: in_the_road
-    NextID: part_1.2
+    NextID: T01_02
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.2
-    SceneID: part_1
+  - TextID: T01_02
+    SceneID: S01
     Order: 2
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Ah iya, ke Pak Tua Jenkin.
+    Expression: 
+    DialogueText: "Oh right\u2026 Old Man Jenkin."
     EventTag: in_the_road
-    NextID: part_1.3
+    NextID: T01_03
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.3
-    SceneID: part_1
+  - TextID: T01_03
+    SceneID: S01
     Order: 3
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Harusnya jalannya benar lewat sini.
+    Expression: 
+    DialogueText: This should be the right way.
     EventTag: in_the_road
-    NextID: part_1.4
+    NextID: T01_04
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.4
-    SceneID: part_1
+  - TextID: T01_04
+    SceneID: S01
     Order: 4
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong.
+    Expression: 
+    DialogueText: Meow.
     EventTag: in_the_road
-    NextID: part_1.5
+    NextID: T01_05
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.5
-    SceneID: part_1
+  - TextID: T01_05
+    SceneID: S01
     Order: 5
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Ada apa, Cali? Kau terganggu dengan ucapanku?
+    Expression: 
+    DialogueText: What is it, Cali? Did I bother you?
     EventTag: in_the_road
-    NextID: part_1.6
+    NextID: T01_06
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.6
-    SceneID: part_1
+  - TextID: T01_06
+    SceneID: S01
     Order: 6
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Maaf ya.
+    Expression: 
+    DialogueText: Sorry.
     EventTag: in_the_road
-    NextID: part_1.7
+    NextID: T01_07
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.7
-    SceneID: part_1
+  - TextID: T01_07
+    SceneID: S01
     Order: 7
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong.
+    Expression: 
+    DialogueText: Meow.
     EventTag: in_the_road
-    NextID: part_1.8
+    NextID: T01_08
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.8
-    SceneID: part_1
+  - TextID: T01_08
+    SceneID: S01
     Order: 8
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Lanjut tidur saja, sebentar lagi kita sampai.
+    Expression: 
+    DialogueText: "Go back to sleep. We\u2019ll be there soon."
     EventTag: in_the_road
-    NextID: part_1.9
+    NextID: T01_09
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.9
-    SceneID: part_1
+  - TextID: T01_09
+    SceneID: S01
     Order: 9
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong.
+    Expression: 
+    DialogueText: "Meow\u2026"
     EventTag: in_the_road
-    NextID: part_1.10
+    NextID: T01_10
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.10
-    SceneID: part_1
+  - TextID: T01_10
+    SceneID: S01
     Order: 10
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Gadis pintar.
+    Expression: 
+    DialogueText: Good girl
     EventTag: in_the_road
-    NextID: part_1.11
+    NextID: T01_11
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.11
-    SceneID: part_1
+  - TextID: T01_11
+    SceneID: S01
     Order: 11
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kali ini tujuannya agak jauh, jadi tidurlah.
+    Expression: 
+    DialogueText: "It\u2019s a bit far this time, so get some rest."
     EventTag: in_the_road
-    NextID: part_1.12
+    NextID: T01_12
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.12
-    SceneID: part_1
+  - TextID: T01_12
+    SceneID: S01
     Order: 12
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kamu lihat perempuan tadi, kan? Sekilas mirip Alya. Maksudku, dia
-      cukup menawan.
+    Expression: 
+    DialogueText: You saw that girl earlier, right? She kind of looked like Alya.
     EventTag: in_the_road
-    NextID: part_1.13
+    NextID: T01_13
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.13
-    SceneID: part_1
+  - TextID: T01_13
+    SceneID: S01
     Order: 13
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong.
+    Expression: 
+    DialogueText: Meow.
     EventTag: in_the_road
-    NextID: part_1.14
+    NextID: T01_14
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.14
-    SceneID: part_1
+  - TextID: T01_14
+    SceneID: S01
     Order: 14
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Aku tidak bermaksud seperti itu. Kalau Alya dengar ini, pasti dia
-      bakal cemberut. Pipinya ngembang kayak ikan.
+    Expression: 
+    DialogueText: "If Alya heard that, she\u2019d definitely pout. Her cheeks would
+      puff up like a blowfish."
     EventTag: in_the_road
-    NextID: part_1.15
+    NextID: T01_15
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.15
-    SceneID: part_1
+  - TextID: T01_15
+    SceneID: S01
     Order: 15
     Speaker: Cali
-    Expression: '-'
+    Expression: 
     DialogueText: Prrrr.
     EventTag: in_the_road
-    NextID: part_1.16
+    NextID: T01_16
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.16
-    SceneID: part_1
+  - TextID: T01_16
+    SceneID: S01
     Order: 16
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kamu mendengarkanku, kan, Cali? Hei, Cali! Dasar kucing.
+    Expression: 
+    DialogueText: "You\u2019re listening, right? You little brat."
     EventTag: in_the_road
-    NextID: part_1.17
+    NextID: T01_17
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.17
-    SceneID: part_1
+  - TextID: T01_17
+    SceneID: S01
     Order: 17
     Speaker: Cali
-    Expression: '-'
+    Expression: 
     DialogueText: ...
     EventTag: in_the_road
-    NextID: part_1.18
+    NextID: T01_18
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_1.18
-    SceneID: part_1
+  - TextID: T01_18
+    SceneID: S01
     Order: 18
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kamu ini ya, benar-benar.
+    Expression: 
+    DialogueText: "Honestly\u2026 you\u2019re something else."
     EventTag: in_the_road
-    NextID: part_1-end
+    NextID: S02
     Notes: 
     SourceTab: Dialogue Part 1
-  - TextID: part_2.1
-    SceneID: part_2
+  - TextID: T02_01
+    SceneID: S02
     Order: 1
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Cali? Kau bangun?
+    Expression: 
+    DialogueText: "Cali\u2026 are you awake?"
     EventTag: in_the_road
-    NextID: part_2.2
+    NextID: T02_02
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.2
-    SceneID: part_2
+  - TextID: T02_02
+    SceneID: S02
     Order: 2
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong?
+    Expression: 
+    DialogueText: Meow?
     EventTag: in_the_road
-    NextID: part_2.3
+    NextID: T02_03
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.3
-    SceneID: part_2
+  - TextID: T02_03
+    SceneID: S02
     Order: 3
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kamu lihat, semua bangunan terendam air.
+    Expression: 
+    DialogueText: "Look\u2026 all the buildings are underwater now."
     EventTag: in_the_road
-    NextID: part_2.4
+    NextID: T02_04
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.4
-    SceneID: part_2
+  - TextID: T02_04
+    SceneID: S02
     Order: 4
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kota ini sungguh tenang, tidak seperti dulu.
+    Expression: 
+    DialogueText: The city feels so quiet. Not like it used to be.
     EventTag: in_the_road
-    NextID: part_2.5
+    NextID: T02_05
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.5
-    SceneID: part_2
+  - TextID: T02_05
+    SceneID: S02
     Order: 5
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kamu tahu itu, kan, Cali?
+    Expression: 
+    DialogueText: You know that too, right, Cali?
     EventTag: in_the_road
-    NextID: part_2.6
+    NextID: T02_06
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.6
-    SceneID: part_2
+  - TextID: T02_06
+    SceneID: S02
     Order: 6
     Speaker: Cali
-    Expression: '-'
+    Expression: 
     DialogueText: ...
     EventTag: in_the_road
-    NextID: part_2.7
+    NextID: T02_07
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.7
-    SceneID: part_2
+  - TextID: T02_07
+    SceneID: S02
     Order: 7
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Cali? Kamu tidur? Dasar kucing.
+    Expression: 
+    DialogueText: Did you fall asleep? You really are a cat.
     EventTag: in_the_road
-    NextID: part_2.8
+    NextID: T02_08
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.8
-    SceneID: part_2
+  - TextID: T02_08
+    SceneID: S02
     Order: 8
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong!
+    Expression: 
+    DialogueText: Meow!
     EventTag: in_the_road
-    NextID: part_2.9
+    NextID: T02_09
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.9
-    SceneID: part_2
+  - TextID: T02_09
+    SceneID: S02
     Order: 9
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Andai saja Alya masih di sini. Mungkin dia akan menangis, tersedu-sedu,
-      lalu matanya jadi bengkak.
+    Expression: 
+    DialogueText: "If Alya were still here\u2026 she\u2019d probably cry her eyes
+      out."
     EventTag: in_the_road
-    NextID: part_2.10
+    NextID: T02_10
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.10
-    SceneID: part_2
+  - TextID: T02_10
+    SceneID: S02
     Order: 10
     Speaker: Kai
-    Expression: '-'
-    DialogueText: "Haha\u2026 pasti jelek banget mukanya."
+    Expression: 
+    DialogueText: Then her face would get all messy.
     EventTag: in_the_road
-    NextID: part_2.11
+    NextID: T02_11
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.11
-    SceneID: part_2
+  - TextID: T02_11
+    SceneID: S02
     Order: 11
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Yah, andai saja. Dan sepertinya itu tidak mungkin.
+    Expression: 
+    DialogueText: "Yeah\u2026 if only. That won\u2019t happen now."
     EventTag: in_the_road
-    NextID: part_2.12
+    NextID: T02_12
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.12
-    SceneID: part_2
+  - TextID: T02_12
+    SceneID: S02
     Order: 12
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong meong.
+    Expression: 
+    DialogueText: Meow.
     EventTag: in_the_road
-    NextID: part_2.13
+    NextID: T02_13
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.13
-    SceneID: part_2
+  - TextID: T02_13
+    SceneID: S02
     Order: 13
     Speaker: Kai
-    Expression: '-'
+    Expression: 
     DialogueText: Cali?
     EventTag: in_the_road
-    NextID: part_2.14
+    NextID: T02_14
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.14
-    SceneID: part_2
+  - TextID: T02_14
+    SceneID: S02
     Order: 14
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong meong.
+    Expression: 
+    DialogueText: Meow.
     EventTag: in_the_road
-    NextID: part_2.15
+    NextID: T02_15
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.15
-    SceneID: part_2
+  - TextID: T02_15
+    SceneID: S02
     Order: 15
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Ada apa denganmu, Cali? Kamu ingin poop?
+    Expression: 
+    DialogueText: "What\u2019s wrong with you? Need to poop or something?"
     EventTag: in_the_road
-    NextID: part_2.16
+    NextID: T02_16
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.16
-    SceneID: part_2
+  - TextID: T02_16
+    SceneID: S02
     Order: 16
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong!
+    Expression: 
+    DialogueText: Meow!
     EventTag: in_the_road
-    NextID: part_2.17
+    NextID: T02_17
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_2.17
-    SceneID: part_2
+  - TextID: T02_17
+    SceneID: S02
     Order: 17
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Yah, semoga dia baik-baik saja di sana.
+    Expression: 
+    DialogueText: "I hope she\u2019s doing okay\u2026 wherever she is."
     EventTag: in_the_road
-    NextID: part_2-end
+    NextID: S03
     Notes: 
     SourceTab: Dialogue Part 2
-  - TextID: part_3.1
-    SceneID: part_3
+  - TextID: T03_01
+    SceneID: S03
     Order: 1
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Maaf ya, Cali. Kamu harus ikut denganku hampir setiap hari ke rumah-rumah
-      klien.
+    Expression: 
+    DialogueText: Sorry, Cali. You have to come with me almost every day, going from
+      one house to another.
     EventTag: in_the_road
-    NextID: part_3.2
+    NextID: T03_02
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.2
-    SceneID: part_3
+  - TextID: T03_02
+    SceneID: S03
     Order: 2
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Soalnya aku tidak bisa meninggalkanmu sendirian di rumah.
+    Expression: 
+    DialogueText: "I just can\u2019t leave you alone at home."
     EventTag: in_the_road
-    NextID: part_3.3
+    NextID: T03_03
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.3
-    SceneID: part_3
+  - TextID: T03_03
+    SceneID: S03
     Order: 3
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kamu akan sangat kesepian, bukan?
+    Expression: 
+    DialogueText: "You\u2019d get really lonely, wouldn\u2019t you?"
     EventTag: in_the_road
-    NextID: part_3.4
+    NextID: T03_04
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.4
-    SceneID: part_3
+  - TextID: T03_04
+    SceneID: S03
     Order: 4
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong meong.
+    Expression: 
+    DialogueText: Meow.
     EventTag: in_the_road
-    NextID: part_3.5
+    NextID: T03_05
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.5
-    SceneID: part_3
+  - TextID: T03_05
+    SceneID: S03
     Order: 5
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Begitu kah? Karena kamu peduli padaku?
+    Expression: 
+    DialogueText: Is that so? Because you care about me?
     EventTag: in_the_road
-    NextID: part_3.6
+    NextID: T03_06
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.6
-    SceneID: part_3
+  - TextID: T03_06
+    SceneID: S03
     Order: 6
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Aku jadi ingin menangis.
+    Expression: 
+    DialogueText: That almost makes me want to cry.
     EventTag: in_the_road
-    NextID: part_3.7
+    NextID: T03_07
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.7
-    SceneID: part_3
+  - TextID: T03_07
+    SceneID: S03
     Order: 7
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong.
+    Expression: 
+    DialogueText: Meow.
     EventTag: in_the_road
-    NextID: part_3.8
+    NextID: T03_08
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.8
-    SceneID: part_3
+  - TextID: T03_08
+    SceneID: S03
     Order: 8
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Benar juga. Kamu sudah menemaniku selama dua tahun ini berkeliling
-      kota, Cali.
+    Expression: 
+    DialogueText: "You know\u2026 you\u2019ve been with me for two whole years now,
+      traveling around the city."
     EventTag: in_the_road
-    NextID: part_3.9
+    NextID: T03_09
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.9
-    SceneID: part_3
+  - TextID: T03_09
+    SceneID: S03
     Order: 9
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Awalnya aku kira kamu tidak akan suka, tapi lihatlah sekarang.
-      Kamu santai tidur di keranjang meski sedang di motor.
+    Expression: 
+    DialogueText: "At first, I thought you wouldn\u2019t like it. But look at you
+      now, sleeping so calmly in that basket, even while we\u2019re on the bike."
     EventTag: in_the_road
-    NextID: part_3.10
+    NextID: T03_10
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.10
-    SceneID: part_3
+  - TextID: T03_10
+    SceneID: S03
     Order: 10
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong?
+    Expression: 
+    DialogueText: Meow?
     EventTag: in_the_road
-    NextID: part_3.11
+    NextID: T03_11
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.11
-    SceneID: part_3
+  - TextID: T03_11
+    SceneID: S03
     Order: 11
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kalau saja bukan karena Alya, mungkin aku tidak akan seperti ini.
+    Expression: 
+    DialogueText: "If it weren\u2019t for Alya\u2026 I probably wouldn\u2019t be
+      living like this."
     EventTag: in_the_road
-    NextID: part_3.12
+    NextID: T03_12
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.12
-    SceneID: part_3
+  - TextID: T03_12
+    SceneID: S03
     Order: 12
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Kamu pasti merindukannya, kan, Cali? Aku tahu itu.
+    Expression: 
+    DialogueText: "You miss her too, don\u2019t you, Cali? I know you do."
     EventTag: in_the_road
-    NextID: part_3.13
+    NextID: T03_13
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.13
-    SceneID: part_3
+  - TextID: T03_13
+    SceneID: S03
     Order: 13
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Meong.
+    Expression: 
+    DialogueText: Meow.
     EventTag: in_the_road
-    NextID: part_3.14
+    NextID: T03_14
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.14
-    SceneID: part_3
+  - TextID: T03_14
+    SceneID: S03
     Order: 14
     Speaker: Kai
-    Expression: '-'
-    DialogueText: Terima kasih, Cali.
+    Expression: 
+    DialogueText: Thank you, Cali.
     EventTag: in_the_road
-    NextID: part_3.15
+    NextID: T03_15
     Notes: 
     SourceTab: Dialogue Part 3
-  - TextID: part_3.15
-    SceneID: part_4
+  - TextID: T03_15
+    SceneID: S03
     Order: 15
     Speaker: Cali
-    Expression: '-'
-    DialogueText: Prrr.
+    Expression: 
+    DialogueText: "\u2026Prrr"
     EventTag: in_the_road
-    NextID: part_3-end
+    NextID: S04
     Notes: 
     SourceTab: Dialogue Part 3
+  - TextID: T04_01
+    SceneID: S04
+    Order: 1
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Let\u2019s stop for a bit, Cali. My butt hurts"
+    EventTag: in_the_side_road
+    NextID: T04_02
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_02
+    SceneID: S04
+    Order: 2
+    Speaker: Cali
+    Expression: 
+    DialogueText: Meow.
+    EventTag: in_the_side_road
+    NextID: T04_03
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_03
+    SceneID: S04
+    Order: 3
+    Speaker: Kai
+    Expression: 
+    DialogueText: "This place reminds me\u2026 Alya and I once came here on our bikes."
+    EventTag: in_the_side_road
+    NextID: T04_04
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_04
+    SceneID: S04
+    Order: 4
+    Speaker: Kai
+    Expression: 
+    DialogueText: She suddenly stopped right here. You know what she said when I
+      asked why?
+    EventTag: in_the_side_road
+    NextID: T04_05
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_05
+    SceneID: S04
+    Order: 5
+    Speaker: Cali
+    Expression: 
+    DialogueText: ...
+    EventTag: in_the_side_road
+    NextID: T04_06
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_06
+    SceneID: S04
+    Order: 6
+    Speaker: Kai
+    Expression: 
+    DialogueText: She said she was tired, her butt hurt, and then she started rambling.
+    EventTag: in_the_side_road
+    NextID: T04_07
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_07
+    SceneID: S04
+    Order: 7
+    Speaker: Kai
+    Expression: 
+    DialogueText: Then she chugged an entire bottle of water.
+    EventTag: in_the_side_road
+    NextID: T04_08
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_08
+    SceneID: S04
+    Order: 8
+    Speaker: Kai
+    Expression: 
+    DialogueText: Such a weird girl.
+    EventTag: in_the_side_road
+    NextID: T04_09
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_09
+    SceneID: S04
+    Order: 9
+    Speaker: Cali
+    Expression: 
+    DialogueText: Meow?
+    EventTag: in_the_side_road
+    NextID: T04_10
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_10
+    SceneID: S04
+    Order: 10
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Cali? You\u2019re listening, right?"
+    EventTag: in_the_side_road
+    NextID: T04_11
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_11
+    SceneID: S04
+    Order: 11
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Good thing she\u2019s not here. She\u2019d be complaining by now."
+    EventTag: in_the_side_road
+    NextID: T04_12
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_12
+    SceneID: S04
+    Order: 12
+    Speaker: Cali
+    Expression: 
+    DialogueText: ...
+    EventTag: in_the_side_road
+    NextID: T04_13
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_13
+    SceneID: S04
+    Order: 13
+    Speaker: Cali
+    Expression: 
+    DialogueText: Meow?
+    EventTag: in_the_side_road
+    NextID: T04_14
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_14
+    SceneID: S04
+    Order: 14
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Even though the city\u2019s flooded, the breeze feels nice."
+    EventTag: in_the_side_road
+    NextID: T04_15
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_15
+    SceneID: S04
+    Order: 15
+    Speaker: Kai
+    Expression: 
+    DialogueText: You can feel it too, right, Cali?
+    EventTag: in_the_side_road
+    NextID: T04_16
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_16
+    SceneID: S04
+    Order: 16
+    Speaker: Cali
+    Expression: 
+    DialogueText: "I\u2026 I\u2026 yeah\u2026"
+    EventTag: in_the_side_road
+    NextID: T04_17
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_17
+    SceneID: S04
+    Order: 17
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Yeah\u2026? Wait, did you just say \u201Cyeah\u201D?"
+    EventTag: in_the_side_road
+    NextID: T04_18
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_18
+    SceneID: S04
+    Order: 18
+    Speaker: Cali
+    Expression: 
+    DialogueText: Yeah. Why are you so surprised?
+    EventTag: in_the_side_road
+    NextID: T04_19
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_19
+    SceneID: S04
+    Order: 19
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Wait\u2026 am I going crazy?"
+    EventTag: in_the_side_road
+    NextID: T04_20
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_20
+    SceneID: S04
+    Order: 20
+    Speaker: Kai
+    Expression: 
+    DialogueText: Am I understanding cat language now?
+    EventTag: in_the_side_road
+    NextID: T04_21
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_21
+    SceneID: S04
+    Order: 21
+    Speaker: Kai
+    Expression: 
+    DialogueText: This is just a hallucination, right?
+    EventTag: in_the_side_road
+    NextID: T04_22
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_22
+    SceneID: S04
+    Order: 22
+    Speaker: Cali
+    Expression: 
+    DialogueText: "Yeah, Kai. You\u2019re totally crazy!"
+    EventTag: in_the_side_road
+    NextID: T04_23
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_23
+    SceneID: S04
+    Order: 23
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Oh no\u2026 it\u2019s talking back."
+    EventTag: in_the_side_road
+    NextID: T04_24
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T04_24
+    SceneID: S04
+    Order: 24
+    Speaker: Cali
+    Expression: 
+    DialogueText: Meow.
+    EventTag: in_the_side_road
+    NextID: S05
+    Notes: 
+    SourceTab: Dialogue Part 4
+  - TextID: T05_01
+    SceneID: S05
+    Order: 1
+    Speaker: Kai
+    Expression: 
+    DialogueText: Package delivery!
+    EventTag: in_the_house
+    NextID: T05_02
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_02
+    SceneID: S05
+    Order: 2
+    Speaker: Kai
+    Expression: 
+    DialogueText: Package delivery!
+    EventTag: in_the_house
+    NextID: T05_03
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_03
+    SceneID: S05
+    Order: 3
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: "Yeah\u2026 give me a moment."
+    EventTag: in_the_house
+    NextID: T05_04
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_04
+    SceneID: S05
+    Order: 4
+    Speaker: Kai
+    Expression: 
+    DialogueText: Is this for Mr. Jenkin?
+    EventTag: in_the_house
+    NextID: T05_05
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_05
+    SceneID: S05
+    Order: 5
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: No need to be so formal. Come on in.
+    EventTag: in_the_house
+    NextID: T05_06
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_06
+    SceneID: S05
+    Order: 6
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Hehe, thank you, Mr. Jenkin, but I can\u2019t stay this time."
+    EventTag: in_the_house
+    NextID: T05_07
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_07
+    SceneID: S05
+    Order: 7
+    Speaker: Kai
+    Expression: 
+    DialogueText: I still have many packages to deliver.
+    EventTag: in_the_house
+    NextID: T05_08
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_08
+    SceneID: S05
+    Order: 8
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: "I see. Alright, I won\u2019t insist."
+    EventTag: in_the_house
+    NextID: T05_09
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_09
+    SceneID: S05
+    Order: 9
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: Did Cali come with you today?
+    EventTag: in_the_house
+    NextID: T05_10
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_10
+    SceneID: S05
+    Order: 10
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Yeah. She\u2019s sleeping soundly in the bike basket."
+    EventTag: in_the_house
+    NextID: T05_11
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_11
+    SceneID: S05
+    Order: 11
+    Speaker: Kai
+    Expression: 
+    DialogueText: Well, she is a cat.
+    EventTag: in_the_house
+    NextID: T05_12
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_12
+    SceneID: S05
+    Order: 12
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: You really spoil her too much.
+    EventTag: in_the_house
+    NextID: T05_13
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_13
+    SceneID: S05
+    Order: 13
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Well\u2026 it was Alya\u2019s request."
+    EventTag: in_the_house
+    NextID: T05_14
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_14
+    SceneID: S05
+    Order: 14
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: Alya?
+    EventTag: in_the_house
+    NextID: T05_15
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_15
+    SceneID: S05
+    Order: 15
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: "That sweet girl\u2026 my goodness, it\u2019s been so long since
+      I last saw her."
+    EventTag: in_the_house
+    NextID: T05_16
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_16
+    SceneID: S05
+    Order: 16
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: How is she doing?
+    EventTag: in_the_house
+    NextID: T05_17
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_17
+    SceneID: S05
+    Order: 17
+    Speaker: Kai
+    Expression: 
+    DialogueText: "\u2026"
+    EventTag: in_the_house
+    NextID: T05_18
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_18
+    SceneID: S05
+    Order: 18
+    Speaker: Kai
+    Expression: 
+    DialogueText: "She\u2019s no longer here, Mr. Jenkin."
+    EventTag: in_the_house
+    NextID: T05_19
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_19
+    SceneID: S05
+    Order: 19
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: Oh? Did she move out of town?
+    EventTag: in_the_house
+    NextID: T05_20
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_20
+    SceneID: S05
+    Order: 20
+    Speaker: Kai
+    Expression: 
+    DialogueText: "No\u2026 it\u2019s just that\u2026"
+    EventTag: in_the_house
+    NextID: T05_21
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_21
+    SceneID: S05
+    Order: 21
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: "Oh my\u2026 forgive me. I forgot."
+    EventTag: in_the_house
+    NextID: T05_22
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_22
+    SceneID: S05
+    Order: 22
+    Speaker: Kai
+    Expression: 
+    DialogueText: "I didn\u2019t mean to upset you."
+    EventTag: in_the_house
+    NextID: T05_23
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_23
+    SceneID: S05
+    Order: 23
+    Speaker: Kai
+    Expression: 
+    DialogueText: "It\u2019s okay, Mr. Jenkin."
+    EventTag: in_the_house
+    NextID: T05_24
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_24
+    SceneID: S05
+    Order: 24
+    Speaker: Jenkin
+    Expression: 
+    DialogueText: I should get going then. Take care.
+    EventTag: in_the_house
+    NextID: T05_25
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T05_25
+    SceneID: S05
+    Order: 25
+    Speaker: Kai
+    Expression: 
+    DialogueText: See you. Give my regards to Cali.
+    EventTag: in_the_house
+    NextID: S06
+    Notes: 
+    SourceTab: Dialogue Part 5
+  - TextID: T06_01
+    SceneID: S06
+    Order: 1
+    Speaker: Kai
+    Expression: 
+    DialogueText: "\u2026 (Sighs)"
+    EventTag: in_the_road
+    NextID: T06_02
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_02
+    SceneID: S06
+    Order: 2
+    Speaker: Kai
+    Expression: 
+    DialogueText: How can you sleep this peacefully, Cali?
+    EventTag: in_the_road
+    NextID: T06_03
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_03
+    SceneID: S06
+    Order: 3
+    Speaker: Kai
+    Expression: 
+    DialogueText: "You\u2019re right\u2026 Alya is really gone. Why do I suddenly
+      feel so sad?"
+    EventTag: in_the_road
+    NextID: T06_04
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_04
+    SceneID: S06
+    Order: 4
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Ever since meeting Mr. Jenkin, I haven\u2019t talked to you. I\u2019m
+      sorry, Cali."
+    EventTag: in_the_road
+    NextID: T06_05
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_05
+    SceneID: S06
+    Order: 5
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Oh yeah\u2026 I just remembered. You spoke earlier, didn\u2019t
+      you?"
+    EventTag: in_the_road
+    NextID: T06_06
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_06
+    SceneID: S06
+    Order: 6
+    Speaker: Cali
+    Expression: 
+    DialogueText: Meow?
+    EventTag: in_the_road
+    NextID: T06_07
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_07
+    SceneID: S06
+    Order: 7
+    Speaker: Kai
+    Expression: 
+    DialogueText: "You\u2019re speaking human language. This is crazy\u2026 I must
+      be losing my mind."
+    EventTag: in_the_road
+    NextID: T06_08
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_08
+    SceneID: S06
+    Order: 8
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Is Alya\u2019s passing making me hallucinate like this?"
+    EventTag: in_the_road
+    NextID: T06_09
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_09
+    SceneID: S06
+    Order: 9
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Oh\u2026 why\u2026?"
+    EventTag: in_the_road
+    NextID: T06_10
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_10
+    SceneID: S06
+    Order: 10
+    Speaker: Cali
+    Expression: 
+    DialogueText: Meow?
+    EventTag: in_the_road
+    NextID: T06_11
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_11
+    SceneID: S06
+    Order: 11
+    Speaker: Kai
+    Expression: 
+    DialogueText: "I\u2019m fine. I just need a moment to pull myself together."
+    EventTag: in_the_road
+    NextID: T06_12
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_12
+    SceneID: S06
+    Order: 12
+    Speaker: Kai
+    Expression: 
+    DialogueText: "\u2026"
+    EventTag: in_the_road
+    NextID: T06_13
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_13
+    SceneID: S06
+    Order: 13
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Cali\u2026 you really can talk, right?"
+    EventTag: in_the_road
+    NextID: T06_14
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_14
+    SceneID: S06
+    Order: 14
+    Speaker: Cali
+    Expression: 
+    DialogueText: Meow.
+    EventTag: in_the_road
+    NextID: T06_15
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_15
+    SceneID: S06
+    Order: 15
+    Speaker: Kai
+    Expression: 
+    DialogueText: Cali, answer me!
+    EventTag: in_the_road
+    NextID: T06_16
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_16
+    SceneID: S06
+    Order: 16
+    Speaker: Cali
+    Expression: 
+    DialogueText: "\u2026"
+    EventTag: in_the_road
+    NextID: T06_17
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_17
+    SceneID: S06
+    Order: 17
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Argh, you stupid cat. Huh\u2026 you\u2019re really annoying, but
+      I can\u2019t stay mad at you."
+    EventTag: in_the_road
+    NextID: T06_18
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_18
+    SceneID: S06
+    Order: 18
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Alya\u2026 what am I supposed to do?"
+    EventTag: in_the_road
+    NextID: T06_19
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_19
+    SceneID: S06
+    Order: 19
+    Speaker: Kai
+    Expression: 
+    DialogueText: Meow, meow.
+    EventTag: in_the_road
+    NextID: T06_20
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_20
+    SceneID: S06
+    Order: 20
+    Speaker: Cali
+    Expression: 
+    DialogueText: "If only you were here\u2026 at least for a while."
+    EventTag: in_the_road
+    NextID: T06_21
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_21
+    SceneID: S06
+    Order: 21
+    Speaker: Kai
+    Expression: 
+    DialogueText: "I... I\u2019m\u2026 I\u2019m here."
+    EventTag: in_the_road
+    NextID: T06_22
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_22
+    SceneID: S06
+    Order: 22
+    Speaker: Cali
+    Expression: 
+    DialogueText: "Huh? Cali? You\u2026?"
+    EventTag: in_the_road
+    NextID: T06_23
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_23
+    SceneID: S06
+    Order: 23
+    Speaker: Kai
+    Expression: 
+    DialogueText: Meow?
+    EventTag: in_the_road
+    NextID: T06_24
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_24
+    SceneID: S06
+    Order: 24
+    Speaker: Cali
+    Expression: 
+    DialogueText: I really have gone crazy.
+    EventTag: in_the_road
+    NextID: T06_25
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T06_25
+    SceneID: S06
+    Order: 25
+    Speaker: Kai
+    Expression: 
+    DialogueText: I should keep working.
+    EventTag: in_the_road
+    NextID: S07
+    Notes: 
+    SourceTab: Dialogue Part 6
+  - TextID: T07_01
+    SceneID: S07
+    Order: 1
+    Speaker: Kai
+    Expression: 
+    DialogueText: "I honestly don\u2019t know how I\u2019m supposed to react. I\u2019ve
+      almost lost my mind during this whole journey."
+    EventTag: in_the_side_road
+    NextID: T07_02
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_02
+    SceneID: S07
+    Order: 2
+    Speaker: Kai
+    Expression: 
+    DialogueText: "And you say I\u2019m fine? There\u2019s no way. You, Cali\u2026
+      none of this makes any sense."
+    EventTag: in_the_side_road
+    NextID: T07_03
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_03
+    SceneID: S07
+    Order: 3
+    Speaker: Alya
+    Expression: 
+    DialogueText: "Kai, calm down. It\u2019s me. Really."
+    EventTag: in_the_side_road
+    NextID: T07_04
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_04
+    SceneID: S07
+    Order: 4
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Huh\u2026 alright. How did you end up in Cali\u2019s body? Did
+      you use some kind of black magic?"
+    EventTag: in_the_side_road
+    NextID: T07_05
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_05
+    SceneID: S07
+    Order: 5
+    Speaker: Alya
+    Expression: 
+    DialogueText: "What are you even saying? That\u2019s ridiculous!"
+    EventTag: in_the_side_road
+    NextID: T07_06
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_06
+    SceneID: S07
+    Order: 6
+    Speaker: Alya
+    Expression: 
+    DialogueText: "After that incident, I suddenly woke up in Cali\u2019s body. I
+      don\u2019t know how it happened, but now\u2026 I\u2019m Cali."
+    EventTag: in_the_side_road
+    NextID: T07_07
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_07
+    SceneID: S07
+    Order: 7
+    Speaker: Kai
+    Expression: 
+    DialogueText: "I don\u2019t understand."
+    EventTag: in_the_side_road
+    NextID: T07_08
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_08
+    SceneID: S07
+    Order: 8
+    Speaker: Alya
+    Expression: 
+    DialogueText: "I don\u2019t either. All this time, I or Cali could understand
+      you, but this is the first time I can speak like a human."
+    EventTag: in_the_side_road
+    NextID: T07_09
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_09
+    SceneID: S07
+    Order: 9
+    Speaker: Kai
+    Expression: 
+    DialogueText: "\u2026"
+    EventTag: in_the_side_road
+    NextID: T07_10
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_10
+    SceneID: S07
+    Order: 10
+    Speaker: Alya
+    Expression: 
+    DialogueText: But i don't think this would last...
+    EventTag: in_the_side_road
+    NextID: T07_11
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_11
+    SceneID: S07
+    Order: 11
+    Speaker: Kai
+    Expression: 
+    DialogueText: What do you mean?
+    EventTag: in_the_side_road
+    NextID: T07_12
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_12
+    SceneID: S07
+    Order: 12
+    Speaker: Alya
+    Expression: 
+    DialogueText: "My ability to speak, or rather, my consciousness probably won\u2019t
+      last long in Cali\u2019s body."
+    EventTag: in_the_side_road
+    NextID: T07_13
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_13
+    SceneID: S07
+    Order: 13
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Why? We just meet again after you left me behind\u2026 and now
+      you\u2019re leaving me again?"
+    EventTag: in_the_side_road
+    NextID: T07_14
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_14
+    SceneID: S07
+    Order: 14
+    Speaker: Alya
+    Expression: 
+    DialogueText: "I don\u2019t know how long this will last, so\u2026"
+    EventTag: in_the_side_road
+    NextID: T07_15
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_15
+    SceneID: S07
+    Order: 15
+    Speaker: Kai
+    Expression: 
+    DialogueText: "That\u2019s enough. Don\u2019t say it."
+    EventTag: in_the_side_road
+    NextID: T07_16
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_16
+    SceneID: S07
+    Order: 16
+    Speaker: Kai
+    Expression: 
+    DialogueText: "I don\u2019t want you to see me like that later."
+    EventTag: in_the_side_road
+    NextID: T07_17
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_17
+    SceneID: S07
+    Order: 17
+    Speaker: Alya
+    Expression: 
+    DialogueText: "You\u2019re really something, Kai."
+    EventTag: in_the_side_road
+    NextID: T07_18
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_18
+    SceneID: S07
+    Order: 18
+    Speaker: Alya
+    Expression: 
+    DialogueText: "So\u2026 how about we ..."
+    EventTag: in_the_side_road
+    NextID: T07_19
+    Notes: 
+    SourceTab: Dialogue Last Part
+  - TextID: T07_19
+    SceneID: S07
+    Order: 19
+    Speaker: Kai
+    Expression: 
+    DialogueText: "Yeah. You\u2019re right. Let\u2019s go."
+    EventTag: in_the_side_road
+    NextID: END
+    Notes: 
+    SourceTab: Dialogue Last Part
