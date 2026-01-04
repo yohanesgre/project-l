@@ -54,6 +54,10 @@ namespace MyGame.Features.Character
         [Tooltip("Starting progress along the path (0 = start, 1 = end).")]
         [Range(0f, 1f)]
         [SerializeField] private float _startingProgress = 0f;
+
+        [Tooltip("Finishing progress along the path (0 = start, 1 = end).")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _finishProgress = 1f;
         
         [Tooltip("Current progress along the path (0 = start, 1 = end).")]
         [Range(0f, 1f)]
@@ -82,14 +86,6 @@ namespace MyGame.Features.Character
         [Tooltip("Lateral offset from the path center (positive = right, negative = left).")]
         [SerializeField] private float _lateralOffset = 0f;
         
-        [Header("Smoothing Settings")]
-        [Tooltip("Smooth time for position interpolation. Set to 0 for instant movement.")]
-        [Range(0f, 0.5f)]
-        [SerializeField] private float _positionSmoothTime = 0.05f;
-        
-        [Tooltip("Maximum distance the follower can move in a single frame to prevent overshoot on sharp turns.")]
-        [SerializeField] private float _maxDistancePerFrame = 10f;
-        
         [Header("Events")]
         [Tooltip("Invoked when the follower reaches the end of the path (Stop mode only).")]
         [SerializeField] private UnityEvent _onPathComplete = new UnityEvent();
@@ -109,11 +105,6 @@ namespace MyGame.Features.Character
         private float _pathLength;
         private int _direction = 1;
         private bool _hasValidPath;
-        
-        // Smoothing state
-        private Vector3 _currentVelocity;
-        private Vector3 _smoothedPosition;
-        private bool _needsPositionSnap;
         
         #endregion
 
@@ -158,6 +149,15 @@ namespace MyGame.Features.Character
         {
             get => _startingProgress;
             set => _startingProgress = Mathf.Clamp01(value);
+        }
+
+        /// <summary>
+        /// Finishing progress along the path.
+        /// </summary>
+        public float FinishProgress
+        {
+            get => _finishProgress;
+            set => _finishProgress = Mathf.Clamp01(value);
         }
         
         /// <summary>
@@ -228,9 +228,6 @@ namespace MyGame.Features.Character
             
             CachePathLength();
             ApplyPositionImmediate();
-            
-            _smoothedPosition = _transform.position;
-            _currentVelocity = Vector3.zero;
             
             if (_autoStartFollowing)
             {
@@ -440,42 +437,45 @@ namespace MyGame.Features.Character
         
         private void HandleEndOfPath(float deltaTime)
         {
+            float endTarget = _finishProgress;
+            float startTarget = 0f; // Could be parametized if needed, but 0 is standard for now
+
             switch (_endBehavior)
             {
                 case EndBehavior.Stop:
-                    if (_progress >= 1f)
+                    if (_direction > 0 && _progress >= endTarget)
                     {
-                        _progress = 1f;
+                        _progress = endTarget;
                         _isFollowing = false;
                         _onPathComplete?.Invoke();
                     }
-                    else if (_progress <= 0f)
+                    else if (_direction < 0 && _progress <= startTarget)
                     {
-                        _progress = 0f;
+                        _progress = startTarget;
                         _isFollowing = false;
                         _onPathComplete?.Invoke();
                     }
                     break;
                     
                 case EndBehavior.Loop:
-                    if (_progress >= 1f)
+                    if (_direction > 0 && _progress >= endTarget)
                     {
-                        _progress -= 1f;
+                        _progress -= endTarget; // Reset relative to finish point
                     }
-                    else if (_progress <= 0f)
+                    else if (_direction < 0 && _progress <= startTarget)
                     {
-                        _progress += 1f;
+                        _progress += endTarget;
                     }
                     break;
                     
                 case EndBehavior.PingPong:
-                    if (_progress >= 1f)
+                    if (_direction > 0 && _progress >= endTarget)
                     {
-                        _progress = 1f - (_progress - 1f);
+                        _progress = endTarget - (_progress - endTarget);
                         _direction = -1;
                         _onDirectionReverse?.Invoke();
                     }
-                    else if (_progress <= 0f)
+                    else if (_direction < 0 && _progress <= startTarget)
                     {
                         _progress = -_progress;
                         _direction = 1;
@@ -484,7 +484,12 @@ namespace MyGame.Features.Character
                     break;
             }
             
-            _progress = Mathf.Clamp01(_progress);
+            // Clamp to ensure we stay within bounds
+            // Note: For Loop behavior, we might momentarily exceed bounds before wrapping, 
+            // so strict clamping here might interfere with the loop logic above if not careful.
+            // But for display purposes, clamping is generally safe.
+            // However, with custom FinishProgress, we should clamp to that range.
+            _progress = Mathf.Clamp(_progress, 0f, 1f); 
         }
         
         private void ApplyPositionAndRotation(float deltaTime)
@@ -500,32 +505,7 @@ namespace MyGame.Features.Character
             targetPosition += pathPoint.Up * _heightOffset;
             targetPosition += pathPoint.Right * _lateralOffset;
             
-            if (_needsPositionSnap || _positionSmoothTime <= 0f)
-            {
-                _transform.position = targetPosition;
-                _smoothedPosition = targetPosition;
-                _currentVelocity = Vector3.zero;
-                _needsPositionSnap = false;
-            }
-            else
-            {
-                _smoothedPosition = Vector3.SmoothDamp(
-                    _smoothedPosition,
-                    targetPosition,
-                    ref _currentVelocity,
-                    _positionSmoothTime
-                );
-                
-                // Prevent overshoot on sharp turns by clamping max distance per frame
-                Vector3 movement = _smoothedPosition - _transform.position;
-                float maxDistance = _maxDistancePerFrame * deltaTime;
-                if (movement.sqrMagnitude > maxDistance * maxDistance)
-                {
-                    _smoothedPosition = _transform.position + movement.normalized * maxDistance;
-                }
-                
-                _transform.position = _smoothedPosition;
-            }
+            _transform.position = targetPosition;
             
             ApplyRotation(pathPoint, deltaTime);
         }
@@ -549,8 +529,6 @@ namespace MyGame.Features.Character
             targetPosition += pathPoint.Right * _lateralOffset;
             
             _transform.position = targetPosition;
-            _smoothedPosition = targetPosition;
-            _currentVelocity = Vector3.zero;
             
             ApplyRotationImmediate(pathPoint);
         }

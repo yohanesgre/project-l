@@ -175,15 +175,17 @@ MonoBehaviour:
   animatedScenes:
   - Scene_Riding_Stop
   - Scene_Riding_Looping
-  loopScenes: 1
+  loopScenes: 0
   autoTransitionDelay: 0
-  fadeOutDuration: 0.5
-  fadeInDuration: 0.5
+  fadeOutDuration: 1.5
+  fadeInDuration: 1.5
   fadeColor: {r: 0, g: 0, b: 0, a: 1}
   loadAdditive: 1
   unloadPreviousScene: 1
+  autoLoadFirstScene: 0
   fadeUIDocument: {fileID: 428080220}
   fadeOverlayName: fade-overlay
+  loadingLabelName: loading-label
   onSceneTransitionStarted:
     m_PersistentCalls:
       m_Calls: []
@@ -211,8 +213,58 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &620018727
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 620018728}
+  - component: {fileID: 620018729}
+  m_Layer: 0
+  m_Name: SequenceManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &620018728
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 620018727}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 89.48959, y: 0, z: 85.65286}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &620018729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 620018727}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a28bf2277f14a585b60ae0a2f86944e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Features.Sequence::MyGame.Features.Sequence.SequenceManager
+  _sequences:
+  - {fileID: 11400000, guid: 2d4f2500434a19d0e9f51001a15b1634, type: 2}
+  - {fileID: 11400000, guid: 244f6e06bf7e2472b9fc09802989f72e, type: 2}
+  _startIndex: 0
+  _playOnStart: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 428080222}
+  - {fileID: 620018728}

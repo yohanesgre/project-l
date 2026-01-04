@@ -25,7 +25,6 @@ namespace MyGame.Core.Editor
         private SerializedProperty _framingOffsetYProp;
         private SerializedProperty _rollAngleProp;
         private SerializedProperty _pitchOffsetProp;
-        private SerializedProperty _positionSmoothTimeProp;
         private SerializedProperty _snapOnStartProp;
         private SerializedProperty _manualProgressProp;
         private SerializedProperty _showGizmosProp;
@@ -48,7 +47,6 @@ namespace MyGame.Core.Editor
             _framingOffsetYProp = serializedObject.FindProperty("_framingOffsetY");
             _rollAngleProp = serializedObject.FindProperty("_rollAngle");
             _pitchOffsetProp = serializedObject.FindProperty("_pitchOffset");
-            _positionSmoothTimeProp = serializedObject.FindProperty("_positionSmoothTime");
             _snapOnStartProp = serializedObject.FindProperty("_snapOnStart");
             _manualProgressProp = serializedObject.FindProperty("_manualProgress");
             _showGizmosProp = serializedObject.FindProperty("_showGizmos");
@@ -148,9 +146,8 @@ namespace MyGame.Core.Editor
             
             EditorGUILayout.Space(10);
             
-            // Smoothing
-            EditorGUILayout.LabelField("Smoothing", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_positionSmoothTimeProp);
+            // Initialization
+            EditorGUILayout.LabelField("Initialization", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_snapOnStartProp);
             
             EditorGUILayout.Space(10);
