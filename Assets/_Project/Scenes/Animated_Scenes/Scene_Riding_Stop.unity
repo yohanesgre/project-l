@@ -2999,7 +2999,6 @@ MonoBehaviour:
   _framingOffsetY: 0
   _rollAngle: -2.5
   _pitchOffset: 0
-  _positionSmoothTime: 0.25
   _snapOnStart: 1
   _manualProgress: 0
   _showGizmos: 1
@@ -6760,19 +6759,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9794128
+      value: 0.97937655
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: 0.008421697
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.20186782
+      value: -0.20186037
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0.0017358047
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -6796,13 +6795,13 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 834728029}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 834728031}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
       insertIndex: -1
       addedObject: {fileID: 834728030}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 834728029}
   m_SourcePrefab: {fileID: 100100000, guid: 0fdc9c870060f8e498f2dae402263772, type: 3}
 --- !u!1 &834728026 stripped
 GameObject:
@@ -6829,15 +6828,24 @@ MonoBehaviour:
   _pathProviderComponent: {fileID: 1628781939}
   _speed: 10
   _startingProgress: 0
+  _finishProgress: 1
   _progress: 0
   _endBehavior: 0
   _isFollowing: 0
-  _autoStartFollowing: 1
-  _rotationMode: 1
+  _autoStartFollowing: 0
+  _rotationMode: 0
   _rotationSpeed: 10
   _heightOffset: 0
   _lateralOffset: 1.25
-  _positionSmoothTime: 0.05
+  _onPathComplete:
+    m_PersistentCalls:
+      m_Calls: []
+  _onDirectionReverse:
+    m_PersistentCalls:
+      m_Calls: []
+  _onProgressChanged:
+    m_PersistentCalls:
+      m_Calls: []
   _showGizmos: 1
   _gizmoColor: {r: 1, g: 0, b: 1, a: 1}
   _gizmoSize: 0.5
@@ -6858,6 +6866,7 @@ MonoBehaviour:
   _speedParameter: Speed
   _useSpeedParameter: 0
   _speedSmoothTime: 0.1
+  _maxSpeed: 10
 --- !u!95 &834728031
 Animator:
   serializedVersion: 7
@@ -7276,6 +7285,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bc1a7fc22e29d5ccca573982188aa12c, type: 3}
   m_PrefabInstance: {fileID: 897024076}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &898744217
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 898744219}
+  - component: {fileID: 898744218}
+  m_Layer: 0
+  m_Name: ActionDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &898744218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898744217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c172249b60eb8a4d3b824c24e4b258e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Features.Character::MyGame.Features.Character.CharacterActionManager
+  _targetCharacter: {fileID: 834728029}
+  fadeUIDocument: {fileID: 1656804821}
+  fadeOverlayName: action-fade-overlay
+  _sequenceAsset: {fileID: 0}
+  _sceneBindings:
+  - key: MainPath
+    target: {fileID: 1628781937}
+  _actions: []
+  _autoStart: 1
+  _loopActions: 0
+  _currentActionIndex: -1
+  _isPlaying: 0
+  _currentActionName: None
+--- !u!4 &898744219
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898744217}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &911938162
 GameObject:
   m_ObjectHideFlags: 0
@@ -13407,6 +13473,61 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bc1a7fc22e29d5ccca573982188aa12c, type: 3}
   m_PrefabInstance: {fileID: 1643823490}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1656804819
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1656804820}
+  - component: {fileID: 1656804821}
+  m_Layer: 0
+  m_Name: TransitionOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1656804820
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656804819}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1656804821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1656804819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 6934e8aa1cda89f27bb30d471c8d744f, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 0cad4a2321795927eafc7cc4d4079b7d, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
 --- !u!1001 &1680096358
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16537,3 +16658,5 @@ SceneRoots:
   - {fileID: 834728025}
   - {fileID: 1882420534}
   - {fileID: 1628781938}
+  - {fileID: 898744219}
+  - {fileID: 1656804820}

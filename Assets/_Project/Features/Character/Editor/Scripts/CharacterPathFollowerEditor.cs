@@ -17,6 +17,7 @@ namespace MyGame.Features.Character.Editor
         private SerializedProperty _pathProviderComponentProp;
         private SerializedProperty _speedProp;
         private SerializedProperty _startingProgressProp;
+        private SerializedProperty _finishProgressProp;
         private SerializedProperty _progressProp;
         private SerializedProperty _endBehaviorProp;
         private SerializedProperty _isFollowingProp;
@@ -25,7 +26,6 @@ namespace MyGame.Features.Character.Editor
         private SerializedProperty _rotationSpeedProp;
         private SerializedProperty _heightOffsetProp;
         private SerializedProperty _lateralOffsetProp;
-        private SerializedProperty _positionSmoothTimeProp;
         
         // Gizmo properties
         private SerializedProperty _showGizmosProp;
@@ -39,6 +39,7 @@ namespace MyGame.Features.Character.Editor
             _pathProviderComponentProp = serializedObject.FindProperty("_pathProviderComponent");
             _speedProp = serializedObject.FindProperty("_speed");
             _startingProgressProp = serializedObject.FindProperty("_startingProgress");
+            _finishProgressProp = serializedObject.FindProperty("_finishProgress");
             _progressProp = serializedObject.FindProperty("_progress");
             _endBehaviorProp = serializedObject.FindProperty("_endBehavior");
             _isFollowingProp = serializedObject.FindProperty("_isFollowing");
@@ -47,7 +48,6 @@ namespace MyGame.Features.Character.Editor
             _rotationSpeedProp = serializedObject.FindProperty("_rotationSpeed");
             _heightOffsetProp = serializedObject.FindProperty("_heightOffset");
             _lateralOffsetProp = serializedObject.FindProperty("_lateralOffset");
-            _positionSmoothTimeProp = serializedObject.FindProperty("_positionSmoothTime");
             
             _showGizmosProp = serializedObject.FindProperty("_showGizmos");
             _gizmoColorProp = serializedObject.FindProperty("_gizmoColor");
@@ -96,9 +96,10 @@ namespace MyGame.Features.Character.Editor
             
             EditorGUILayout.Space(5);
             
-            // Starting progress
+            // Starting/Finishing progress
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(_startingProgressProp, new GUIContent("Starting Progress"));
+            EditorGUILayout.PropertyField(_finishProgressProp, new GUIContent("Finish Progress"));
             if (EditorGUI.EndChangeCheck())
             {
                 serializedObject.ApplyModifiedProperties();
@@ -154,12 +155,6 @@ namespace MyGame.Features.Character.Editor
             
             EditorGUILayout.Space(10);
             
-            // Smoothing Settings
-            EditorGUILayout.LabelField("Smoothing Settings", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(_positionSmoothTimeProp);
-            
-            EditorGUILayout.Space(10);
-            
             // Gizmo Settings Section
             EditorGUILayout.LabelField("Gizmo Settings", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_showGizmosProp);
@@ -184,16 +179,25 @@ namespace MyGame.Features.Character.Editor
             EditorGUILayout.BeginHorizontal();
             
             GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button($"Reset to Start ({_startingProgressProp.floatValue:P0})", GUILayout.Height(25)))
+            if (GUILayout.Button($"Start ({_startingProgressProp.floatValue:P0})", GUILayout.Height(25)))
             {
                 Undo.RecordObject(_follower, "Reset Progress");
-                _follower.ResetProgress();
+                _follower.ResetProgress(); // Uses StartingProgress internally
+                EditorUtility.SetDirty(_follower);
+                SceneView.RepaintAll();
+            }
+            
+            GUI.backgroundColor = new Color(0.2f, 0.8f, 1f); // Light blue
+            if (GUILayout.Button($"Finish ({_finishProgressProp.floatValue:P0})", GUILayout.Height(25)))
+            {
+                Undo.RecordObject(_follower, "Set Progress to Finish");
+                _follower.SetProgress(_finishProgressProp.floatValue);
                 EditorUtility.SetDirty(_follower);
                 SceneView.RepaintAll();
             }
             
             GUI.backgroundColor = Color.magenta;
-            if (GUILayout.Button("Go to End", GUILayout.Height(25)))
+            if (GUILayout.Button("End (100%)", GUILayout.Height(25)))
             {
                 Undo.RecordObject(_follower, "Set Progress to End");
                 _follower.SetProgress(1f);

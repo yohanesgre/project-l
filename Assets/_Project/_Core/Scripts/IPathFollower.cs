@@ -15,5 +15,10 @@ namespace MyGame.Core
         /// Current normalized progress along the path (0 = start, 1 = end).
         /// </summary>
         float Progress { get; }
+
+        /// <summary>
+        /// Movement speed in units per second.
+        /// </summary>
+        float Speed { get; }
     }
 }

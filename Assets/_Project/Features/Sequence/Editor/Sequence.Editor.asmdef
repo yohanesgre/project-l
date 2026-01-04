@@ -1,0 +1,16 @@
+{
+    "name": "Features.Sequence.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c5edd9d65b49287d4873049333b05a98"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -53,6 +53,9 @@ namespace MyGame.Core
         [Tooltip("Name of the fade overlay element in UXML (default: 'fade-overlay')")]
         [SerializeField] private string fadeOverlayName = "fade-overlay";
         
+        [Tooltip("Name of the label element to show text on (default: 'loading-label')")]
+        [SerializeField] private string loadingLabelName = "loading-label";
+        
         [Header("Events")]
         [SerializeField] private UnityEvent<string> onSceneTransitionStarted;
         [SerializeField] private UnityEvent<string> onSceneLoaded;
@@ -95,6 +98,7 @@ namespace MyGame.Core
         
         // UI Toolkit references
         private VisualElement _fadeOverlay;
+        private Label _loadingLabel;
         
         #endregion
         
@@ -220,7 +224,8 @@ namespace MyGame.Core
         /// Transitions to a specific scene by name.
         /// </summary>
         /// <param name="sceneName">The name of the scene to load.</param>
-        public void TransitionToSceneByName(string sceneName)
+        /// <param name="transitionText">Optional text to show during transition.</param>
+        public void TransitionToSceneByName(string sceneName, string transitionText = null)
         {
             int index = animatedScenes.IndexOf(sceneName);
             if (index == -1)
@@ -229,7 +234,7 @@ namespace MyGame.Core
                 return;
             }
             
-            TransitionToScene(sceneName, index);
+            TransitionToScene(sceneName, index, transitionText);
         }
         
         /// <summary>
@@ -303,6 +308,40 @@ namespace MyGame.Core
             }
             return null;
         }
+
+        /// <summary>
+        /// Processes a transition command string (e.g. "SceneA_to_SceneB" or just "SceneB").
+        /// </summary>
+        /// <param name="command">The command string to parse.</param>
+        public void ProcessTransitionCommand(string command)
+        {
+            if (string.IsNullOrEmpty(command))
+            {
+                Debug.LogWarning("[AnimatedSceneController] Received empty transition command.");
+                return;
+            }
+
+            string targetScene = command;
+
+            // Check for "source_to_target" format
+            if (command.Contains("_to_"))
+            {
+                string[] parts = command.Split(new string[] { "_to_" }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2)
+                {
+                    // Optional: could verify we are currently in parts[0]
+                    targetScene = parts[1];
+                    Debug.Log($"[AnimatedSceneController] Parsed command '{command}' -> Target: '{targetScene}'");
+                }
+                else
+                {
+                    Debug.LogWarning($"[AnimatedSceneController] Invalid command format: '{command}'. Expected 'Source_to_Target'.");
+                    return;
+                }
+            }
+
+            TransitionToSceneByName(targetScene);
+        }
         
         #endregion
         
@@ -332,6 +371,7 @@ namespace MyGame.Core
             
             // Find the fade overlay element
             _fadeOverlay = root.Q<VisualElement>(fadeOverlayName);
+            _loadingLabel = root.Q<Label>(loadingLabelName);
             
             if (_fadeOverlay == null)
             {
@@ -359,7 +399,7 @@ namespace MyGame.Core
             }
         }
         
-        private void TransitionToScene(string sceneName, int sceneIndex)
+        private void TransitionToScene(string sceneName, int sceneIndex, string transitionText = null)
         {
             if (_isTransitioning)
             {
@@ -367,15 +407,21 @@ namespace MyGame.Core
                 return;
             }
             
-            StartCoroutine(TransitionCoroutine(sceneName, sceneIndex));
+            StartCoroutine(TransitionCoroutine(sceneName, sceneIndex, transitionText));
         }
         
-        private IEnumerator TransitionCoroutine(string targetSceneName, int targetSceneIndex)
+        private IEnumerator TransitionCoroutine(string targetSceneName, int targetSceneIndex, string transitionText)
         {
             _isTransitioning = true;
             
             // Stop auto-transition during manual transition
             StopAutoTransition();
+            
+            // Set transition text if provided
+            if (_loadingLabel != null && !string.IsNullOrEmpty(transitionText))
+            {
+                _loadingLabel.text = transitionText;
+            }
             
             // Fire started events
             OnSceneTransitionStarted?.Invoke(targetSceneName);

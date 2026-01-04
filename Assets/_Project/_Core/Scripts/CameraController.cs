@@ -59,11 +59,6 @@ namespace MyGame.Core
         [Range(-30f, 30f)]
         [SerializeField] private float _pitchOffset = 0f;
         
-        [Header("Smoothing")]
-        [Tooltip("Smooth time for position following. Lower = snappier.")]
-        [Range(0f, 1f)]
-        [SerializeField] private float _positionSmoothTime = 0.25f;
-        
         [Tooltip("Snap camera to position immediately on start.")]
         [SerializeField] private bool _snapOnStart = true;
         
@@ -73,13 +68,12 @@ namespace MyGame.Core
         [SerializeField] private float _manualProgress = 0f;
         
         #endregion
-
+        
         #region Private Fields
         
         private Transform _transform;
         private IPathProvider _pathProvider;
         private IPathFollower _targetPathFollower;
-        private Vector3 _currentVelocity;
         private bool _isInitialized;
         private bool _hasWarnedAboutInvalidPathFollower;
         
@@ -235,7 +229,6 @@ namespace MyGame.Core
         private void OnValidate()
         {
             _progressOffset = Mathf.Clamp(_progressOffset, 0f, 0.5f);
-            _positionSmoothTime = Mathf.Max(0f, _positionSmoothTime);
             _rotationSmoothSpeed = Mathf.Max(0f, _rotationSmoothSpeed);
             _rollAngle = Mathf.Clamp(_rollAngle, -45f, 45f);
             _pitchOffset = Mathf.Clamp(_pitchOffset, -30f, 30f);
@@ -269,7 +262,6 @@ namespace MyGame.Core
             
             Vector3 targetPosition = CalculateTargetPosition();
             _transform.position = targetPosition;
-            _currentVelocity = Vector3.zero;
             
             // Snap rotation too
             if (_target != null)
@@ -307,9 +299,6 @@ namespace MyGame.Core
             // Also snap rotation to prevent jarring angle changes
             Quaternion targetRotation = CalculateTargetRotation();
             _transform.rotation = targetRotation;
-            
-            // Reset velocity to prevent smoothing artifacts after teleport
-            _currentVelocity = Vector3.zero;
         }
         
         /// <summary>
@@ -455,28 +444,12 @@ namespace MyGame.Core
         }
         
         /// <summary>
-        /// Updates the camera position with smooth damping.
+        /// Updates the camera position. Snaps to target position for perfect sync.
         /// </summary>
         private void UpdateCameraPosition()
         {
             Vector3 targetPosition = CalculateTargetPosition();
-            
-            if (_positionSmoothTime > 0f && _isInitialized)
-            {
-                _transform.position = Vector3.SmoothDamp(
-                    _transform.position,
-                    targetPosition,
-                    ref _currentVelocity,
-                    _positionSmoothTime,
-                    Mathf.Infinity,
-                    Time.deltaTime
-                );
-            }
-            else
-            {
-                _transform.position = targetPosition;
-                _currentVelocity = Vector3.zero;
-            }
+            _transform.position = targetPosition;
         }
         
         /// <summary>
