@@ -416,10 +416,23 @@ namespace MyGame.Core
             // Camera is ahead of the target (in front, looking back)
             float cameraProgress = targetProgress + _progressOffset;
             
-            // Handle looping - wrap around if we go past 1.0
-            if (cameraProgress > 1f)
+            // Handle progress based on whether the path is a loop
+            if (_pathProvider.IsLoop)
             {
-                cameraProgress -= 1f;
+                // For looping paths, wrap around if we go past 1.0
+                if (cameraProgress > 1f)
+                {
+                    cameraProgress -= 1f;
+                }
+                else if (cameraProgress < 0f)
+                {
+                    cameraProgress += 1f;
+                }
+            }
+            else
+            {
+                // For non-looping paths, clamp to [0, 1] to respect end behavior
+                cameraProgress = Mathf.Clamp01(cameraProgress);
             }
             
             CurrentProgress = cameraProgress;
