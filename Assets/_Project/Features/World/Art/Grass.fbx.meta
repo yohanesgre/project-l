@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 0fdc9c870060f8e498f2dae402263772
+guid: 042e030fdf1dd97949fc0c58d40936ad
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -7,28 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Box
-    second: {fileID: 2100000, guid: 2ba9583a453b360f1b0f2ea7884097b6, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Cat
-    second: {fileID: 2100000, guid: 3def66995db94b652842a06ebaede305, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Character
-    second: {fileID: 2100000, guid: 958bb1b0f9e083a52b782af64ca0c1cb, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Motor
-    second: {fileID: 2100000, guid: 488de7eb9798ce05a81620d1941a58c9, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Net
-    second: {fileID: 2100000, guid: b0b3805bed63ee1119ce730017402893, type: 2}
+      name: Rumput
+    second: {fileID: 2100000, guid: b984b3219b5b2b5a8b3c9a574b092905, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -54,36 +34,7 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     extraUserProperties: []
-    clipAnimations:
-    - serializedVersion: 16
-      name: Riding
-      takeName: Riding
-      internalID: 0
-      firstFrame: 0
-      lastFrame: 120
-      wrapMode: 0
-      orientationOffsetY: 0
-      level: 0
-      cycleOffset: 0
-      loop: 0
-      hasAdditiveReferencePose: 0
-      loopTime: 1
-      loopBlend: 0
-      loopBlendOrientation: 0
-      loopBlendPositionY: 0
-      loopBlendPositionXZ: 0
-      keepOriginalOrientation: 0
-      keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
-      heightFromFeet: 0
-      mirror: 0
-      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
-      events: []
-      transformMask: []
-      maskType: 3
-      maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
+    clipAnimations: []
     isReadable: 0
   meshes:
     lODScreenPercentages: []
@@ -95,8 +46,8 @@ ModelImporter:
     importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
-    importCameras: 0
-    importLights: 0
+    importCameras: 1
+    importLights: 1
     nodeNameCollisionStrategy: 1
     fileIdsGeneration: 2
     swapUVChannels: 0

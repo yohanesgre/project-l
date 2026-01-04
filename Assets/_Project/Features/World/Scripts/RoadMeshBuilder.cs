@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using MyGame.Core;
 
 namespace MyGame.Features.World
 {
@@ -11,6 +12,7 @@ namespace MyGame.Features.World
     {
         /// <summary>
         /// Represents a point along the road path with all necessary data for mesh generation.
+        /// This is now an alias for PathPoint from Core for backward compatibility.
         /// </summary>
         public struct RoadPoint
         {
@@ -20,6 +22,37 @@ namespace MyGame.Features.World
             public Vector3 Up;
             public float Width;
             public float DistanceAlongPath;
+            
+            /// <summary>
+            /// Converts a PathPoint to a RoadPoint.
+            /// </summary>
+            public static implicit operator RoadPoint(PathPoint pathPoint)
+            {
+                return new RoadPoint
+                {
+                    Position = pathPoint.Position,
+                    Forward = pathPoint.Forward,
+                    Right = pathPoint.Right,
+                    Up = pathPoint.Up,
+                    Width = pathPoint.Width,
+                    DistanceAlongPath = pathPoint.DistanceAlongPath
+                };
+            }
+            
+            /// <summary>
+            /// Converts a RoadPoint to a PathPoint.
+            /// </summary>
+            public static implicit operator PathPoint(RoadPoint roadPoint)
+            {
+                return new PathPoint(
+                    roadPoint.Position,
+                    roadPoint.Forward,
+                    roadPoint.Right,
+                    roadPoint.Up,
+                    roadPoint.Width,
+                    roadPoint.DistanceAlongPath
+                );
+            }
         }
         
         /// <summary>
