@@ -44,20 +44,20 @@ namespace MyGame.Features.World
         [Header("Path Mode Settings")]
         [Tooltip("How far ahead of the target the camera should be (in path progress, 0-1 range). E.g., 0.05 = 5% ahead on the path.")]
         [Range(0f, 0.5f)]
-        [SerializeField] private float _progressOffset = 0.02f;
+        [SerializeField] private float _progressOffset = 0.01f;
         
         [Tooltip("Height offset from the road surface.")]
-        [SerializeField] private float _heightOffset = 1.5f;
+        [SerializeField] private float _heightOffset = 2.5f;
         
         [Tooltip("Lateral offset from road center (positive = right, negative = left).")]
-        [SerializeField] private float _lateralOffset = 0f;
+        [SerializeField] private float _lateralOffset = -7.5f;
         
         [Header("Orbit Mode Settings")]
         [Tooltip("Center point of the orbit (e.g., center of circular road). If null, uses this transform's initial position.")]
         [SerializeField] private Transform _orbitCenter;
         
         [Tooltip("Distance from orbit center to camera.")]
-        [SerializeField] private float _orbitRadius = 5f;
+        [SerializeField] private float _orbitRadius = 1f;
         
         [Tooltip("Height offset from orbit center.")]
         [SerializeField] private float _orbitHeightOffset = 0f;
@@ -71,10 +71,10 @@ namespace MyGame.Features.World
         
         [Header("Look At Settings")]
         [Tooltip("Height offset for the look-at point on the target.")]
-        [SerializeField] private float _lookAtHeightOffset = 1.2f;
+        [SerializeField] private float _lookAtHeightOffset = 1.5f;
         
         [Tooltip("How quickly the camera rotates to face the target.")]
-        [SerializeField] private float _rotationSmoothSpeed = 10f;
+        [SerializeField] private float _rotationSmoothSpeed = 25f;
         
         [Tooltip("Horizontal screen offset for framing. Positive = target appears on left, Negative = target on right.")]
         [Range(-0.5f, 0.5f)]
@@ -87,7 +87,7 @@ namespace MyGame.Features.World
         [Header("Downhill Illusion (Camera Tilt)")]
         [Tooltip("Roll angle to tilt the camera, creating a downhill illusion. Positive = tilt right, Negative = tilt left.")]
         [Range(-45f, 45f)]
-        [SerializeField] private float _rollAngle = 0f;
+        [SerializeField] private float _rollAngle = -2.5f;
         
         [Tooltip("Additional pitch adjustment. Positive = look more down, Negative = look more up.")]
         [Range(-30f, 30f)]
@@ -96,7 +96,7 @@ namespace MyGame.Features.World
         [Header("Smoothing")]
         [Tooltip("Smooth time for position following. Lower = snappier.")]
         [Range(0f, 1f)]
-        [SerializeField] private float _positionSmoothTime = 0.1f;
+        [SerializeField] private float _positionSmoothTime = 0.25f;
         
         [Tooltip("Snap camera to position immediately on start.")]
         [SerializeField] private bool _snapOnStart = true;
