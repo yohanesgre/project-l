@@ -137,8 +137,8 @@ namespace MyGame.Features.Dialogue.UI
 
         private void RegisterCallbacks()
         {
-            // Dialogue container click to advance
-            _dialogueContainer?.RegisterCallback<ClickEvent>(OnDialogueContainerClick);
+            // Root click to advance dialogue (click anywhere on screen)
+            _root?.RegisterCallback<ClickEvent>(OnRootClick);
 
             // Control buttons
             _btnAuto?.RegisterCallback<ClickEvent>(OnAutoClick);
@@ -149,7 +149,7 @@ namespace MyGame.Features.Dialogue.UI
 
         private void UnregisterCallbacks()
         {
-            _dialogueContainer?.UnregisterCallback<ClickEvent>(OnDialogueContainerClick);
+            _root?.UnregisterCallback<ClickEvent>(OnRootClick);
             _btnAuto?.UnregisterCallback<ClickEvent>(OnAutoClick);
             _btnSkip?.UnregisterCallback<ClickEvent>(OnSkipClick);
             _btnLog?.UnregisterCallback<ClickEvent>(OnLogClick);
@@ -462,9 +462,10 @@ namespace MyGame.Features.Dialogue.UI
 
         #region UI Event Handlers
 
-        private void OnDialogueContainerClick(ClickEvent evt)
+        private void OnRootClick(ClickEvent evt)
         {
-            evt.StopPropagation();
+            // Don't advance if clicking on buttons (they handle their own events)
+            if (evt.target is Button) return;
 
             // If typing, skip to end
             if (typewriterEffect != null && typewriterEffect.IsTyping)

@@ -320,6 +320,13 @@ namespace MyGame.Features.Dialogue
 
         private void HandleDialogueEnded()
         {
+            // Auto-save when dialogue ends
+            if (_currentState == GameState.Playing)
+            {
+                SaveController.QuickSave(_saveAdapter);
+                Debug.Log("[GameManager] Auto-saved on dialogue end");
+            }
+
             if (pauseOnDialogueEnd && _currentState == GameState.Playing)
             {
                 PauseGame();
