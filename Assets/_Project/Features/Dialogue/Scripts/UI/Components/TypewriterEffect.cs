@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Runtime
+namespace MyGame.Features.Dialogue.UI
 {
     /// <summary>
     /// Typewriter effect for UI Toolkit Labels.

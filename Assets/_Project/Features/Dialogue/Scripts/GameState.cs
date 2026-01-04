@@ -1,4 +1,4 @@
-namespace Runtime
+namespace MyGame.Features.Dialogue
 {
     /// <summary>
     /// Represents the current state of the visual novel game loop.

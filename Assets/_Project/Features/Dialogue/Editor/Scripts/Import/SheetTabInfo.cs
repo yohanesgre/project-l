@@ -1,6 +1,6 @@
 using System;
 
-namespace Runtime
+namespace MyGame.Features.Dialogue.Editor
 {
     [Serializable]
     public class SheetTabInfo

@@ -38,6 +38,9 @@ namespace MyGame.Features.Dialogue.Models
         [Tooltip("Developer notes (ignored at runtime)")]
         public string Notes;
 
+        [Tooltip("Source tab name from Google Sheets (for multi-tab imports)")]
+        public string SourceTab;
+
         /// <summary>
         /// Checks if this entry has any events to process.
         /// </summary>

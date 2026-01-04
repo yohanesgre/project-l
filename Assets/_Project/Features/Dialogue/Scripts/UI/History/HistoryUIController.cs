@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using MyGame.Features.Dialogue;
+using MyGame.Features.Dialogue.Models;
 
-namespace Runtime
+namespace MyGame.Features.Dialogue.UI
 {
     /// <summary>
     /// Controls the history/log panel UI using UI Toolkit.

@@ -3,7 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Runtime
+namespace MyGame.Features.Dialogue.Editor
 {
     /// <summary>
     /// ScriptableObject storing Google Sheets API settings.

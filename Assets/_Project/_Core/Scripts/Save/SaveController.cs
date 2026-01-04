@@ -1,31 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-<<<<<<<< HEAD:Assets/_Project/_Core/Scripts/Save/SaveController.cs
-
-========
-using MyGame.Features.Dialogue;
-using MyGame.Features.Dialogue.Models;
->>>>>>>> main:Assets/_Project/_Core/Scripts/Save/SaveManager.cs
 using UnityEngine;
 
 namespace MyGame.Core.Save
 {
     /// <summary>
     /// Static utility class for save/load functionality.
+    /// Uses ISaveableState interface to work with any saveable system.
     /// Saves are stored in Application.persistentDataPath.
     /// </summary>
     public static class SaveController
     {
-        private const string SaveFilePrefix = "vnsave_";
+        private const string SaveFilePrefix = "save_";
         private const string SaveFileExtension = ".json";
 
         // Story flags (shared across save system)
         private static Dictionary<string, object> _storyFlags = new Dictionary<string, object>();
 
         // Events
-        public static event Action<int, SaveData> OnSaveCompleted;
-        public static event Action<int, SaveData> OnLoadCompleted;
+        public static event Action<int, SaveStateData> OnSaveCompleted;
+        public static event Action<int, SaveStateData> OnLoadCompleted;
         public static event Action<int> OnSlotDeleted;
 
         // Settings accessor
@@ -37,51 +32,56 @@ namespace MyGame.Core.Save
         /// Saves the current game state to a slot.
         /// </summary>
         /// <param name="slotIndex">Slot index (0 = quicksave if enabled).</param>
+        /// <param name="saveable">The saveable state provider.</param>
         /// <param name="saveName">Optional user-provided name.</param>
-        /// <param name="dialogueManager">Reference to active DialogueManager.</param>
-        public static bool SaveToSlot(int slotIndex, DialogueManager dialogueManager, string saveName = null)
+        public static bool SaveToSlot(int slotIndex, ISaveableState saveable, string saveName = null)
         {
             if (!ValidateSlotIndex(slotIndex)) return false;
 
-            if (dialogueManager == null || !dialogueManager.IsDialogueActive)
+            if (saveable == null || !saveable.CanSave)
             {
-                Debug.LogWarning("[SaveController] Cannot save: no active dialogue");
+                Debug.LogWarning("[SaveController] Cannot save: saveable is null or cannot save");
                 return false;
             }
 
-            var currentEntry = dialogueManager.CurrentEntry;
-            var currentDatabase = dialogueManager.CurrentDatabase;
-
-            if (currentEntry == null || currentDatabase == null)
+            var stateData = saveable.GetCurrentState();
+            if (stateData == null)
             {
-                Debug.LogWarning("[SaveController] Cannot save: invalid state");
+                Debug.LogWarning("[SaveController] Cannot save: failed to get current state");
                 return false;
             }
 
-            var saveData = SaveData.CreateFromCurrentState(
-                currentDatabase.name,
-                currentEntry.TextID,
-                currentEntry.SceneID,
-                _storyFlags,
-                currentEntry.DialogueText?.Substring(0, Math.Min(50, currentEntry.DialogueText?.Length ?? 0))
-            );
+            // Merge story flags into save data
+            foreach (var kvp in _storyFlags)
+            {
+                bool exists = stateData.StoryFlags.Exists(f => f.Key == kvp.Key);
+                if (!exists)
+                {
+                    stateData.StoryFlags.Add(new StoryFlag
+                    {
+                        Key = kvp.Key,
+                        Value = kvp.Value?.ToString() ?? "",
+                        Type = kvp.Value?.GetType().Name ?? "String"
+                    });
+                }
+            }
 
-            saveData.SaveName = saveName;
+            stateData.SaveName = saveName ?? stateData.SaveName;
 
-            return WriteSaveFile(slotIndex, saveData);
+            return WriteSaveFile(slotIndex, stateData);
         }
 
         /// <summary>
         /// Quick save to slot 0.
         /// </summary>
-        public static bool QuickSave(DialogueManager dialogueManager)
+        public static bool QuickSave(ISaveableState saveable)
         {
             if (!Settings.EnableQuickSave)
             {
                 Debug.LogWarning("[SaveController] QuickSave is disabled");
                 return false;
             }
-            return SaveToSlot(0, dialogueManager, "Quick Save");
+            return SaveToSlot(0, saveable, "Quick Save");
         }
 
         #endregion
@@ -92,60 +92,61 @@ namespace MyGame.Core.Save
         /// Loads game state from a slot.
         /// </summary>
         /// <param name="slotIndex">Slot index to load.</param>
-        /// <param name="dialogueManager">Reference to DialogueManager to apply state to.</param>
+        /// <param name="saveable">The saveable state to restore to.</param>
         /// <returns>True if load was successful.</returns>
-        public static bool LoadFromSlot(int slotIndex, DialogueManager dialogueManager)
+        public static bool LoadFromSlot(int slotIndex, ISaveableState saveable)
         {
             if (!ValidateSlotIndex(slotIndex)) return false;
 
-            var saveData = ReadSaveFile(slotIndex);
-            if (saveData == null)
+            var stateData = ReadSaveFile(slotIndex);
+            if (stateData == null)
             {
                 Debug.LogWarning($"[SaveController] No save data in slot {slotIndex}");
                 return false;
             }
 
-            return ApplySaveData(slotIndex, saveData, dialogueManager);
+            // Restore story flags
+            _storyFlags = stateData.GetFlagsAsDictionary();
+
+            // Delegate restoration to the saveable implementation
+            if (saveable != null)
+            {
+                bool success = saveable.RestoreState(stateData);
+                if (success)
+                {
+                    OnLoadCompleted?.Invoke(slotIndex, stateData);
+                    Debug.Log($"[SaveController] Loaded from slot {slotIndex}");
+                    return true;
+                }
+                else
+                {
+                    Debug.LogError($"[SaveController] Failed to restore state from slot {slotIndex}");
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
         /// Quick load from slot 0.
         /// </summary>
-        public static bool QuickLoad(DialogueManager dialogueManager)
+        public static bool QuickLoad(ISaveableState saveable)
         {
             if (!Settings.EnableQuickSave)
             {
                 Debug.LogWarning("[SaveController] QuickSave/Load is disabled");
                 return false;
             }
-            return LoadFromSlot(0, dialogueManager);
+            return LoadFromSlot(0, saveable);
         }
 
         /// <summary>
-        /// Applies loaded save data to restore game state.
+        /// Gets the save data from a slot without restoring it.
         /// </summary>
-        private static bool ApplySaveData(int slotIndex, SaveData saveData, DialogueManager dialogueManager)
+        public static SaveStateData GetSaveData(int slotIndex)
         {
-            // Find the database asset
-            var database = LoadDatabase(saveData.DatabaseName);
-            if (database == null)
-            {
-                Debug.LogError($"[SaveController] Database not found: {saveData.DatabaseName}");
-                return false;
-            }
-
-            // Restore story flags
-            _storyFlags = saveData.GetFlagsAsDictionary();
-
-            // Start dialogue from saved position
-            if (dialogueManager != null)
-            {
-                dialogueManager.StartDialogue(database, saveData.CurrentTextID);
-            }
-
-            OnLoadCompleted?.Invoke(slotIndex, saveData);
-            Debug.Log($"[SaveController] Loaded from slot {slotIndex}");
-            return true;
+            return ReadSaveFile(slotIndex);
         }
 
         #endregion
@@ -280,15 +281,15 @@ namespace MyGame.Core.Save
             return Path.Combine(Application.persistentDataPath, $"{SaveFilePrefix}{slotIndex}{SaveFileExtension}");
         }
 
-        private static bool WriteSaveFile(int slotIndex, SaveData saveData)
+        private static bool WriteSaveFile(int slotIndex, SaveStateData stateData)
         {
             try
             {
                 var path = GetSaveFilePath(slotIndex);
-                var json = JsonUtility.ToJson(saveData, true);
+                var json = JsonUtility.ToJson(stateData, true);
                 File.WriteAllText(path, json);
 
-                OnSaveCompleted?.Invoke(slotIndex, saveData);
+                OnSaveCompleted?.Invoke(slotIndex, stateData);
                 Debug.Log($"[SaveController] Saved to slot {slotIndex}: {path}");
                 return true;
             }
@@ -299,7 +300,7 @@ namespace MyGame.Core.Save
             }
         }
 
-        private static SaveData ReadSaveFile(int slotIndex)
+        private static SaveStateData ReadSaveFile(int slotIndex)
         {
             try
             {
@@ -307,7 +308,7 @@ namespace MyGame.Core.Save
                 if (!File.Exists(path)) return null;
 
                 var json = File.ReadAllText(path);
-                return JsonUtility.FromJson<SaveData>(json);
+                return JsonUtility.FromJson<SaveStateData>(json);
             }
             catch (Exception e)
             {
@@ -328,25 +329,6 @@ namespace MyGame.Core.Save
                 return false;
             }
             return true;
-        }
-
-        private static DialogueDatabase LoadDatabase(string databaseName)
-        {
-            // Try loading from Resources
-            var database = Resources.Load<DialogueDatabase>($"Dialogues/{databaseName}");
-            if (database != null) return database;
-
-            // Try finding in loaded assets
-            var databases = Resources.FindObjectsOfTypeAll<DialogueDatabase>();
-            foreach (var db in databases)
-            {
-                if (db.name == databaseName)
-                {
-                    return db;
-                }
-            }
-
-            return null;
         }
 
         #endregion

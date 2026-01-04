@@ -4,8 +4,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 using System.Collections;
 using System.Collections.Generic;
+using MyGame.Features.Dialogue;
+using MyGame.Features.Dialogue.Models;
 
-namespace Runtime
+namespace MyGame.Features.Dialogue.UI
 {
     /// <summary>
     /// Controls the dialogue panel UI using UI Toolkit.

@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using MyGame.Features.Dialogue;
 
-namespace Runtime
+namespace MyGame.Features.Dialogue.UI
 {
     /// <summary>
     /// Controls the choice panel UI using UI Toolkit.

@@ -1,10 +1,12 @@
 using System;
-
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using MyGame.Core.Save;
+using MyGame.Features.Dialogue.Save;
+using MyGame.Features.Dialogue.Models;
 
-namespace Runtime
+namespace MyGame.Features.Dialogue
 {
     /// <summary>
     /// Central game controller managing the visual novel's game loop and state transitions.
@@ -49,6 +51,7 @@ namespace Runtime
         private GameState _currentState = GameState.Title;
         private GameState _previousState = GameState.Title;
         private float _savedTimeScale = 1f;
+        private DialogueSaveAdapter _saveAdapter;
 
         // Public accessors
         public GameState CurrentState => _currentState;
@@ -66,6 +69,7 @@ namespace Runtime
         private void Awake()
         {
             CacheReferences();
+            _saveAdapter = new DialogueSaveAdapter(dialogueManager);
         }
 
         private void Start()
@@ -155,7 +159,7 @@ namespace Runtime
 
             SetState(GameState.Loading);
 
-            bool success = SaveController.LoadFromSlot(slotIndex, dialogueManager);
+            bool success = SaveController.LoadFromSlot(slotIndex, _saveAdapter);
 
             if (success)
             {
@@ -261,7 +265,7 @@ namespace Runtime
                 return false;
             }
 
-            return SaveController.QuickSave(dialogueManager);
+            return SaveController.QuickSave(_saveAdapter);
         }
 
         /// <summary>

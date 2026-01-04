@@ -28,6 +28,7 @@ namespace MyGame.Features.Dialogue
         public event Action<List<ChoiceOption>> OnChoicesPresented;
         public event Action OnDialogueEnded;
         public event Action<string> OnSpeakerChanged;
+        public event Action OnSceneTransitionStart;
 
         // Current state
         private DialogueDatabase _currentDatabase;

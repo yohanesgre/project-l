@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Runtime
+namespace MyGame.Core.Save
 {
     /// <summary>
     /// ScriptableObject containing save system configuration.

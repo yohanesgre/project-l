@@ -5,21 +5,21 @@ using UnityEngine;
 namespace MyGame.Core.Save
 {
     /// <summary>
-    /// Represents the save data for a visual novel save slot.
-    /// Contains all information needed to restore dialogue state.
+    /// Generic save state data container.
+    /// Can be used by any feature to store its state.
     /// </summary>
     [Serializable]
-    public class SaveData
+    public class SaveStateData
     {
-        [Header("Dialogue State")]
-        [Tooltip("Name of the current DialogueDatabase asset")]
-        public string DatabaseName;
+        [Header("State Identification")]
+        [Tooltip("Name of the source/module (e.g., database name, chapter name)")]
+        public string SourceName;
 
-        [Tooltip("Current dialogue TextID")]
-        public string CurrentTextID;
+        [Tooltip("Current position identifier (e.g., text ID, checkpoint ID)")]
+        public string CurrentPosition;
 
-        [Tooltip("Current scene ID")]
-        public string CurrentSceneID;
+        [Tooltip("Current scene/chapter identifier")]
+        public string SceneId;
 
         [Header("Story State")]
         [Tooltip("Story flags and variables")]
@@ -41,31 +41,34 @@ namespace MyGame.Core.Save
         [Tooltip("Base64 encoded screenshot thumbnail")]
         public string ScreenshotBase64;
 
+        [Header("Custom Data")]
+        [Tooltip("Additional feature-specific data as key-value pairs")]
+        public List<CustomDataEntry> CustomData = new List<CustomDataEntry>();
+
         /// <summary>
-        /// Creates save data from current game state.
+        /// Creates save state data with the given parameters.
         /// </summary>
-        public static SaveData CreateFromCurrentState(
-            string databaseName,
-            string currentTextID,
-            string currentSceneID,
+        public static SaveStateData Create(
+            string sourceName,
+            string currentPosition,
+            string sceneId,
             Dictionary<string, object> flags = null,
             string previewText = null)
         {
-            var saveData = new SaveData
+            var data = new SaveStateData
             {
-                DatabaseName = databaseName,
-                CurrentTextID = currentTextID,
-                CurrentSceneID = currentSceneID,
+                SourceName = sourceName,
+                CurrentPosition = currentPosition,
+                SceneId = sceneId,
                 SavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                PreviewText = previewText ?? currentTextID
+                PreviewText = previewText ?? currentPosition
             };
 
-            // Convert flags dictionary to list
             if (flags != null)
             {
                 foreach (var kvp in flags)
                 {
-                    saveData.StoryFlags.Add(new StoryFlag
+                    data.StoryFlags.Add(new StoryFlag
                     {
                         Key = kvp.Key,
                         Value = kvp.Value?.ToString() ?? "",
@@ -74,7 +77,7 @@ namespace MyGame.Core.Save
                 }
             }
 
-            return saveData;
+            return data;
         }
 
         /// <summary>
@@ -112,6 +115,31 @@ namespace MyGame.Core.Save
             }
             return SavedAt;
         }
+
+        /// <summary>
+        /// Sets a custom data value.
+        /// </summary>
+        public void SetCustomData(string key, string value)
+        {
+            var existing = CustomData.Find(x => x.Key == key);
+            if (existing != null)
+            {
+                existing.Value = value;
+            }
+            else
+            {
+                CustomData.Add(new CustomDataEntry { Key = key, Value = value });
+            }
+        }
+
+        /// <summary>
+        /// Gets a custom data value.
+        /// </summary>
+        public string GetCustomData(string key, string defaultValue = null)
+        {
+            var entry = CustomData.Find(x => x.Key == key);
+            return entry?.Value ?? defaultValue;
+        }
     }
 
     /// <summary>
@@ -126,6 +154,16 @@ namespace MyGame.Core.Save
     }
 
     /// <summary>
+    /// Represents a custom data entry for extensibility.
+    /// </summary>
+    [Serializable]
+    public class CustomDataEntry
+    {
+        public string Key;
+        public string Value;
+    }
+
+    /// <summary>
     /// Metadata about a save slot (for displaying in UI without loading full save).
     /// </summary>
     [Serializable]
@@ -135,7 +173,7 @@ namespace MyGame.Core.Save
         public bool HasSave;
         public string SavedAt;
         public string PreviewText;
-        public string DatabaseName;
+        public string SourceName;
         public string SaveName;
 
         public static SaveSlotInfo Empty(int slotIndex)
@@ -147,7 +185,7 @@ namespace MyGame.Core.Save
             };
         }
 
-        public static SaveSlotInfo FromSaveData(int slotIndex, SaveData data)
+        public static SaveSlotInfo FromSaveData(int slotIndex, SaveStateData data)
         {
             return new SaveSlotInfo
             {
@@ -155,7 +193,7 @@ namespace MyGame.Core.Save
                 HasSave = true,
                 SavedAt = data.SavedAt,
                 PreviewText = data.PreviewText,
-                DatabaseName = data.DatabaseName,
+                SourceName = data.SourceName,
                 SaveName = data.SaveName
             };
         }
