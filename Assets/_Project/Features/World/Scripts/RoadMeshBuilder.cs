@@ -41,9 +41,11 @@ namespace MyGame.Features.World
             mesh.name = "GeneratedRoad";
             
             int pointCount = points.Count;
-            int vertexCount = pointCount * 2;
-            // For loops, we need 6 more triangles to connect last segment back to first
-            int segmentCount = isLoop ? pointCount : pointCount - 1;
+            
+            // For loops, we add 2 extra vertices for the closing segment that duplicate 
+            // the first point's position but with proper UVs for seamless tiling
+            int vertexCount = isLoop ? (pointCount + 1) * 2 : pointCount * 2;
+            int segmentCount = pointCount - 1 + (isLoop ? 1 : 0);
             int triangleCount = segmentCount * 6;
             
             Vector3[] vertices = new Vector3[vertexCount];
@@ -53,6 +55,13 @@ namespace MyGame.Features.World
             
             // Calculate total path length for UV mapping
             float totalLength = points[points.Count - 1].DistanceAlongPath;
+            
+            // For loops, add the distance of the closing segment
+            if (isLoop)
+            {
+                totalLength += Vector3.Distance(points[points.Count - 1].Position, points[0].Position);
+            }
+            
             if (totalLength <= 0) totalLength = 1f;
             
             // Generate vertices (two per road point - left and right edges)
@@ -77,16 +86,38 @@ namespace MyGame.Features.World
                 uvs[rightIndex] = new Vector2(1f, v);
             }
             
+            // For loops, add closing vertices at the EXACT same positions as the first point's vertices
+            // This ensures the mesh closes seamlessly with no visible gap
+            // The only difference is the UVs continue from the end of the path for proper texture tiling
+            if (isLoop)
+            {
+                RoadPoint firstPoint = points[0];
+                float halfWidth = firstPoint.Width / 2f;
+                
+                int closingLeftIndex = pointCount * 2;
+                int closingRightIndex = pointCount * 2 + 1;
+                
+                // Use the FIRST point's Right vector so positions match exactly with vertices 0 and 1
+                // This closes the gap - the closing vertices are at the same world position as the first vertices
+                vertices[closingLeftIndex] = firstPoint.Position - firstPoint.Right * halfWidth;
+                vertices[closingRightIndex] = firstPoint.Position + firstPoint.Right * halfWidth;
+                normals[closingLeftIndex] = firstPoint.Up;
+                normals[closingRightIndex] = firstPoint.Up;
+                
+                // UV continues from the last point for seamless texture tiling
+                float closingV = uvTiling; // Full loop = full tiling
+                uvs[closingLeftIndex] = new Vector2(0f, closingV);
+                uvs[closingRightIndex] = new Vector2(1f, closingV);
+            }
+            
             // Generate triangles (two per segment forming a quad)
             int triIndex = 0;
             for (int i = 0; i < segmentCount; i++)
             {
                 int bl = i * 2;       // Bottom-left
                 int br = i * 2 + 1;   // Bottom-right
-                // For the last segment in a loop, connect back to first vertices
-                int nextIndex = (i + 1) % pointCount;
-                int tl = nextIndex * 2;     // Top-left
-                int tr = nextIndex * 2 + 1; // Top-right
+                int tl = (i + 1) * 2;     // Top-left
+                int tr = (i + 1) * 2 + 1; // Top-right
                 
                 // First triangle (bottom-left, top-left, top-right)
                 triangles[triIndex++] = bl;
@@ -164,6 +195,9 @@ namespace MyGame.Features.World
                 }
                 
                 // Generate points along this segment
+                // For non-loop paths, the last segment needs to include t=1.0 (the final waypoint)
+                // For loop paths, we never include t=1.0 here because t=1.0 of segment i
+                // is the same position as t=0.0 of segment i+1
                 int steps = (i == iterations - 1 && !isLoop) ? segmentsPerWaypoint + 1 : segmentsPerWaypoint;
                 
                 for (int s = 0; s < steps; s++)
