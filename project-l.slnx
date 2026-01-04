@@ -1,7 +1,7 @@
 ﻿<Solution>
+  <Project Path="Core.csproj" />
   <Project Path="Features.Dialogue.csproj" />
   <Project Path="Features.Character.Editor.csproj" />
-  <Project Path="Core.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Features.World.csproj" />
   <Project Path="Features.Character.csproj" />
@@ -9,4 +9,5 @@
   <Project Path="Features.World.Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Core.Editor.csproj" />
+  <Project Path="Editor.csproj" />
 </Solution>
