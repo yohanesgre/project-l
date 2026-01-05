@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
+using MyGame.Core.Audio;
 
 namespace MyGame.Features.Dialogue.UI
 {
@@ -14,12 +15,20 @@ namespace MyGame.Features.Dialogue.UI
         [Header("Settings")]
         [Tooltip("Time between each character reveal")]
         [SerializeField] private float defaultCharacterDelay = 0.04f;
-        
+
         [Tooltip("Pause duration for punctuation marks")]
         [SerializeField] private float punctuationDelay = 0.15f;
-        
+
         [Tooltip("Characters that trigger punctuation delay")]
         [SerializeField] private string punctuationChars = ".,!?;:";
+
+        [Header("Sound")]
+        [Tooltip("SFX key for typewriter sound")]
+        [SerializeField] private string typewriterSFXKey = "typewriter";
+
+        [Tooltip("Volume scale for typewriter sound (0-1)")]
+        [Range(0f, 1f)]
+        [SerializeField] private float typewriterVolume = 0.5f;
 
         public event Action OnTypewriterStarted;
         public event Action OnTypewriterCompleted;
@@ -32,6 +41,7 @@ namespace MyGame.Features.Dialogue.UI
         private bool _skipRequested;
         private Coroutine _typingCoroutine;
         private float _currentCharacterDelay;
+        private AudioSource _typewriterSFXSource;
 
         public bool IsTyping => _isTyping;
         public float CharacterDelay
@@ -56,7 +66,7 @@ namespace MyGame.Features.Dialogue.UI
             _skipRequested = false;
             _isTyping = true;
             _targetLabel.text = "";
-            
+
             OnTypewriterStarted?.Invoke();
             _typingCoroutine = StartCoroutine(TypeTextCoroutine());
         }
@@ -74,6 +84,7 @@ namespace MyGame.Features.Dialogue.UI
                 _typingCoroutine = null;
             }
             _isTyping = false;
+            StopTypewriterSFX();
         }
 
         public void ShowAllText()
@@ -81,11 +92,15 @@ namespace MyGame.Features.Dialogue.UI
             StopTyping();
             if (_targetLabel != null && !string.IsNullOrEmpty(_fullText))
                 _targetLabel.text = _fullText;
+            StopTypewriterSFX();
             OnTypewriterCompleted?.Invoke();
         }
 
         private IEnumerator TypeTextCoroutine()
         {
+            // Start typewriter SFX (looping) when typing begins
+            PlayTypewriterSFX();
+
             while (_currentIndex < _fullText.Length)
             {
                 if (_skipRequested)
@@ -110,7 +125,29 @@ namespace MyGame.Features.Dialogue.UI
 
             _isTyping = false;
             _typingCoroutine = null;
+            StopTypewriterSFX();
             OnTypewriterCompleted?.Invoke();
+        }
+
+        private void PlayTypewriterSFX()
+        {
+            if (string.IsNullOrEmpty(typewriterSFXKey)) return;
+            if (AudioManager.Instance == null) return;
+
+            // Only start if not already playing
+            if (_typewriterSFXSource == null || !_typewriterSFXSource.isPlaying)
+            {
+                _typewriterSFXSource = AudioManager.Instance.PlayLoopingSFX(typewriterSFXKey, 0f, typewriterVolume);
+            }
+        }
+
+        private void StopTypewriterSFX()
+        {
+            if (_typewriterSFXSource != null && AudioManager.Instance != null)
+            {
+                AudioManager.Instance.StopLoopingSFX(_typewriterSFXSource, 0.1f);
+                _typewriterSFXSource = null;
+            }
         }
 
         public void SetSpeedNormalized(float normalizedSpeed)
