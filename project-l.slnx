@@ -2,6 +2,7 @@
   <Project Path="Core.csproj" />
   <Project Path="Features.Dialogue.csproj" />
   <Project Path="Features.Character.Editor.csproj" />
+  <Project Path="Features.UI.csproj" />
   <Project Path="Features.Character.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Features.Sequence.Editor.csproj" />

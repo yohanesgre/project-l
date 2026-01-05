@@ -1,0 +1,79 @@
+/* Main Menu Styles */
+
+.main-menu-root {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Slight tint over the 3D scene */
+    justify-content: center;
+    align-items: flex-start; /* Left aligned menu */
+    padding-left: 150px;
+}
+
+.menu-content {
+    flex-direction: column;
+    justify-content: center;
+}
+
+.game-title {
+    font-size: 120px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    margin-bottom: 60px;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+    letter-spacing: 10px;
+}
+
+.button-container {
+    width: 400px;
+    flex-direction: column;
+    align-items: flex-start; 
+}
+
+.menu-button {
+    width: 100%;
+    height: 60px;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-width: 0;
+    border-left-width: 4px;
+    border-left-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    
+    font-size: 24px;
+    color: rgb(220, 220, 220);
+    -unity-text-align: middle-left;
+    padding-left: 30px;
+    transition-duration: 0.2s;
+}
+
+.menu-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-left-color: rgb(79, 195, 247); /* Cyan accent */
+    padding-left: 45px; /* Slide effect */
+    color: white;
+}
+
+.menu-button:active {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: rgb(79, 195, 247);
+}
+
+.button-disabled {
+    opacity: 0.5;
+    color: rgb(100, 100, 100);
+}
+
+.button-disabled:hover {
+    padding-left: 30px; /* No slide */
+    border-left-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgb(100, 100, 100);
+}
+
+.version-label {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+}

@@ -44,6 +44,12 @@ namespace MyGame.Features.Sequence.Editor
                 {
                     manager.StopSequence();
                 }
+
+                GUILayout.Space(5);
+                if (GUILayout.Button("Trigger Next Action", GUILayout.Height(30)))
+                {
+                    manager.TriggerNextAction();
+                }
             }
             else
             {

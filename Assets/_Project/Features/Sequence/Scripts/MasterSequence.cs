@@ -6,6 +6,8 @@ namespace MyGame.Features.Sequence
     [CreateAssetMenu(fileName = "NewMasterSequence", menuName = "MyGame/Sequence/Master Sequence")]
     public class MasterSequence : ScriptableObject
     {
+        public string id;
+
         [TextArea]
         public string description;
         

@@ -460,6 +460,7 @@ namespace MyGame.Core
                 if (newScene.IsValid())
                 {
                     SceneManager.SetActiveScene(newScene);
+                    DisableDuplicateAudioListeners(newScene);
                 }
                 
                 // Unload previous scene
@@ -564,6 +565,28 @@ namespace MyGame.Core
         {
             OnTransitionProgress?.Invoke(progress);
             onTransitionProgress?.Invoke(progress);
+        }
+
+        private void DisableDuplicateAudioListeners(Scene loadedScene)
+        {
+            AudioListener[] listeners = FindObjectsOfType<AudioListener>();
+            
+            if (listeners.Length <= 1) return;
+            
+            foreach (var listener in listeners)
+            {
+                // We want to ENABLE the listener in the loaded scene, and DISABLE others.
+                if (listener.gameObject.scene == loadedScene)
+                {
+                    listener.enabled = true;
+                    Debug.Log($"[AnimatedSceneController] Enabled AudioListener in '{loadedScene.name}'.");
+                }
+                else
+                {
+                    listener.enabled = false;
+                    // Debug.Log($"[AnimatedSceneController] Disabled background AudioListener in '{listener.gameObject.scene.name}'.");
+                }
+            }
         }
         
         #endregion

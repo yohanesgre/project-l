@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 96772a831e967bc1492cb7bf7c5a9c90, type: 3}
-  m_Name: Character_Sequence_1
+  m_Name: RidingInLoopSequence
   m_EditorClassIdentifier: Features.Sequence::MyGame.Core.Sequence.PlayCharacterSequenceStep
-  stepName: Character_Sequence_1
-  characterSequence: {fileID: 11400000, guid: a2113ca884c957f849549fc5a926ea6e, type: 2}
+  stepName: riding_in_loop_sequence
+  characterSequence: {fileID: 11400000, guid: be6fccd86a07b33b7b43cce6c08f0a83, type: 2}

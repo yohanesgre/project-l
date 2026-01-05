@@ -12,42 +12,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a55dd1d3df248eb1ea430cff6eb8af4e, type: 3}
   m_Name: RidingStopSequence
   m_EditorClassIdentifier: 
-  sequenceId: 
+  sequenceId: Riding_Stop
   actions:
-  - actionName: Start Idle
-    actionType: 0
-    fadeOut: 0
-    fadeIn: 1
-    fadeDuration: 0.5
-    duration: 2
-    targetKey: 
-    startProgress: 0
-    finishProgress: 1
-    walkSpeed: 2
-    stopDistance: 0.1
-    onCompleteCommand: 
   - actionName: Ride Sequence
     actionType: 1
-    fadeOut: 1
-    fadeIn: 1
+    cameraMode: 0
+    fadeOut: 0
+    fadeIn: 0
+    fadeDuration: 0.5
+    duration: 2
+    targetKey: MainPath
+    startProgress: 0
+    finishProgress: 0.2
+    loop: 0
+    onCompleteCommand: 
+  - actionName: Idle Sequence
+    actionType: 0
+    cameraMode: 0
+    fadeOut: 0
+    fadeIn: 0
     fadeDuration: 0.5
     duration: 2
     targetKey: MainPath
     startProgress: 0
     finishProgress: 0.5
-    walkSpeed: 2
-    stopDistance: 0.1
+    loop: 0
     onCompleteCommand: 
-  - actionName: End Idle
-    actionType: 0
-    fadeOut: 1
-    fadeIn: 1
-    fadeDuration: 0.5
-    duration: 2
-    targetKey: 
-    startProgress: 0
-    finishProgress: 1
-    walkSpeed: 2
-    stopDistance: 0.1
-    onCompleteCommand: 
+  requireManualTrigger: 0
   loop: 0
