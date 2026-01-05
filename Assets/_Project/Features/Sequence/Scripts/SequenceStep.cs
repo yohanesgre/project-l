@@ -8,9 +8,6 @@ namespace MyGame.Features.Sequence
     /// </summary>
     public abstract class SequenceStep : ScriptableObject
     {
-        [Tooltip("Description for debugging/inspector")]
-        public string stepName;
-
         /// <summary>
         /// Executes the step. Returns an IEnumerator for coroutine execution.
         /// </summary>

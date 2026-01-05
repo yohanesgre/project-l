@@ -2,7 +2,8 @@
     "name": "Features.UI",
     "rootNamespace": "",
     "references": [
-        "GUID:4708f2795463878ba84348f1c9f7580d"
+        "GUID:4708f2795463878ba84348f1c9f7580d",
+        "GUID:a43dea5f35f93abe7b10e0ec104d86a8"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -20,7 +20,7 @@ namespace MyGame.Features.Character
     {
         Idle,
         Ride,
-        WalkTo
+        Teleport
     }
 
     [Serializable]
@@ -28,6 +28,7 @@ namespace MyGame.Features.Character
     {
         public string name = "New Action";
         public ActionType actionType;
+        public CameraController.CameraMode cameraMode = CameraController.CameraMode.PathFollow;
         
         [Header("Transition")]
         [Tooltip("If true, the screen will fade to black before this action starts.")]
@@ -50,14 +51,12 @@ namespace MyGame.Features.Character
         [Tooltip("Progress along the path to finish at (0-1)")]
         [Range(0f, 1f)]
         public float finishProgress = 1f;
+        [Tooltip("If true, the character will loop on the path until manual intervention.")]
+        public bool loop = false;
         
-        [Header("Walk Settings")]
-        [Tooltip("Target transform to walk to")]
-        public Transform walkTarget;
-        [Tooltip("Walking speed")]
-        public float walkSpeed = 2f;
-        [Tooltip("Stopping distance")]
-        public float stopDistance = 0.1f;
+        [Header("Teleport Settings")]
+        [Tooltip("Target transform to teleport to")]
+        public Transform teleportTarget;
         
         [Header("Events")]
         [Tooltip("Events to fire when this action starts")]
@@ -80,6 +79,9 @@ namespace MyGame.Features.Character
         [Tooltip("The character to control. Must have a CharacterPathFollower component.")]
         [SerializeField] private CharacterPathFollower _targetCharacter;
 
+        [Tooltip("The CameraController to control. If empty, it will be auto-found.")]
+        [SerializeField] private CameraController _cameraController;
+
         [Header("UI Toolkit References")]
         [Tooltip("UIDocument for fade overlay")]
         [SerializeField] private UIDocument fadeUIDocument;
@@ -98,6 +100,7 @@ namespace MyGame.Features.Character
         
         [SerializeField] private bool _autoStart = true;
         [SerializeField] private bool _loopActions = false;
+        [SerializeField] private bool _requireManualTrigger = false;
 
         [Header("Debug/State")]
         [SerializeField] private int _currentActionIndex = -1;
@@ -111,6 +114,19 @@ namespace MyGame.Features.Character
 
         private Coroutine _currentActionCoroutine;
         private VisualElement _fadeOverlay;
+        private Dictionary<string, GameObject> _bindingCache = new Dictionary<string, GameObject>();
+
+        private void RebuildBindingCache()
+        {
+            _bindingCache.Clear();
+            foreach (var binding in _sceneBindings)
+            {
+                if (!string.IsNullOrEmpty(binding.key) && !_bindingCache.ContainsKey(binding.key))
+                {
+                    _bindingCache.Add(binding.key, binding.target);
+                }
+            }
+        }
         
         // When played via SequenceManager, we want to suppress internal scene triggers
         // to avoid conflicts with the Master Sequence flow.
@@ -137,6 +153,13 @@ namespace MyGame.Features.Character
             _isInitialized = true;
             _suppressSceneTransitions = false;
             InitializeFadeOverlay();
+            RebuildBindingCache();
+
+            // Cache CameraController
+            if (_cameraController == null)
+            {
+                _cameraController = FindObjectOfType<CameraController>();
+            }
 
             // Load sequence from SO if assigned
             if (_sequenceAsset != null)
@@ -235,6 +258,12 @@ namespace MyGame.Features.Character
                 Debug.LogError("[CharacterActionManager] Received null sequence!");
                 return;
             }
+
+            if (_sequenceAsset == sequence && _isPlaying)
+            {
+                Debug.Log($"[CharacterActionManager] Sequence '{sequence.name}' is already active. Ignoring replay request.");
+                return;
+            }
             
             // Ensure initialization happens first (dependencies like CharacterPathFollower)
             if (!_isInitialized)
@@ -250,8 +279,7 @@ namespace MyGame.Features.Character
             _suppressSceneTransitions = true;
             
             _sequenceAsset = sequence;
-            LoadSequenceFromAsset();
-            
+
             // Force assign binding for "MainPath" if it exists in the scene but bindings are empty
             // This is a common MVP fix for when bindings aren't set up in the Inspector for every scene
             if (_sceneBindings.Count == 0)
@@ -263,6 +291,9 @@ namespace MyGame.Features.Character
                      Debug.Log("[CharacterActionManager] Auto-bound 'MainPath' to found CustomPath.");
                  }
             }
+            
+            RebuildBindingCache();
+            LoadSequenceFromAsset();
 
             if (_actions.Count > 0)
             {
@@ -281,6 +312,7 @@ namespace MyGame.Features.Character
             
             _actions.Clear();
             _loopActions = _sequenceAsset.loop;
+            _requireManualTrigger = _sequenceAsset.requireManualTrigger;
             
             Debug.Log($"[CharacterActionManager] Loading sequence from asset: {_sequenceAsset.name}");
             
@@ -289,14 +321,14 @@ namespace MyGame.Features.Character
                 var action = new CharacterAction();
                 action.name = def.actionName;
                 action.actionType = (ActionType)def.actionType; // Cast between same-named enums
+                action.cameraMode = def.cameraMode;
                 action.fadeOut = def.fadeOut;
                 action.fadeIn = def.fadeIn;
                 action.fadeDuration = def.fadeDuration;
                 action.duration = def.duration;
                 action.startProgress = def.startProgress;
                 action.finishProgress = def.finishProgress;
-                action.walkSpeed = def.walkSpeed;
-                action.stopDistance = def.stopDistance;
+                action.loop = def.loop;
                 action.onCompleteCommand = def.onCompleteCommand;
                 
                 // Resolve bindings
@@ -309,9 +341,9 @@ namespace MyGame.Features.Character
                         {
                             action.pathTarget = target;
                         }
-                        else if (action.actionType == ActionType.WalkTo)
+                        else if (action.actionType == ActionType.Teleport)
                         {
-                            action.walkTarget = target.transform;
+                            action.teleportTarget = target.transform;
                         }
                     }
                     else
@@ -326,11 +358,8 @@ namespace MyGame.Features.Character
         
         private GameObject FindBinding(string key)
         {
-            foreach (var binding in _sceneBindings)
-            {
-                if (binding.key == key) return binding.target;
-            }
-            return null;
+            if (_bindingCache == null) RebuildBindingCache();
+            return _bindingCache.TryGetValue(key, out var target) ? target : null;
         }
 
         private void GenerateDefaultSequence()
@@ -359,6 +388,15 @@ namespace MyGame.Features.Character
             }
         }
 
+        private void OnDestroy()
+        {
+            StopAllCoroutines();
+            if (_targetCharacter != null)
+            {
+                _targetCharacter.OnPathComplete.RemoveListener(OnRideComplete);
+            }
+        }
+
         public void PlayAction(int index)
         {
             if (index < 0 || index >= _actions.Count)
@@ -373,6 +411,13 @@ namespace MyGame.Features.Character
                     Debug.Log("[CharacterActionManager] Sequence finished.");
                     OnSequenceFinished?.Invoke();
                 }
+                return;
+            }
+
+            // Optimization: If requesting the same action index that is currently playing, treat it as a continuation
+            if (_isPlaying && _currentActionIndex == index)
+            {
+                Debug.Log($"[CharacterActionManager] Already playing action {index} ({_actions[index].name}). Continuing...");
                 return;
             }
 
@@ -409,6 +454,21 @@ namespace MyGame.Features.Character
             // This sets up the character (teleport, start animation, start path).
             // The screen might be black here if fadeOut was true.
             Debug.Log($"[CharacterActionManager] Starting action {_currentActionIndex}: {action.name} ({action.actionType})");
+            
+            // Apply camera mode
+            // Force apply camera mode from action definition as per request.
+            if (_cameraController == null) _cameraController = FindObjectOfType<CameraController>(); // Late binding check
+
+            if (_cameraController != null)
+            {
+                Debug.Log($"[CharacterActionManager] Setting Camera Mode to: {action.cameraMode}");
+                _cameraController.Mode = action.cameraMode;
+            }
+            else
+            {
+                Debug.LogWarning("[CharacterActionManager] CameraController not found!");
+            }
+            
             action.onStart?.Invoke();
 
             switch (action.actionType)
@@ -419,8 +479,8 @@ namespace MyGame.Features.Character
                 case ActionType.Ride:
                     DoRide(action);
                     break;
-                case ActionType.WalkTo:
-                    StartCoroutine(DoWalkTo(action));
+                case ActionType.Teleport:
+                    DoTeleport(action);
                     break;
             }
 
@@ -431,6 +491,12 @@ namespace MyGame.Features.Character
             {
                 Debug.Log($"[CharacterActionManager] Action '{action.name}' Transition: Fading In...");
                 yield return FadeIn(action.fadeDuration);
+            }
+
+            // For synchronous actions (like Teleport) or skipped actions, ensure completion is triggered
+            if (action.actionType == ActionType.Teleport)
+            {
+                CompleteAction(action);
             }
         }
 
@@ -526,13 +592,28 @@ namespace MyGame.Features.Character
             Debug.Log($"[CharacterActionManager] Ride Distance: {dist:F1} units. Speed: {_targetCharacter.Speed}. Estimated Time: {estimatedTime:F1}s.");
 
             // Validate progress
-            if (action.startProgress >= action.finishProgress)
+            if (Mathf.Abs(action.startProgress - action.finishProgress) < 0.001f)
             {
-                 Debug.LogWarning($"[CharacterActionManager] StartProgress ({action.startProgress}) >= FinishProgress ({action.finishProgress}). Character might stop immediately.");
+                 Debug.LogWarning($"[CharacterActionManager] Action '{action.name}' has ~0 distance. Completing immediately.");
+                 CompleteAction(action);
+                 return;
+            }
+
+            if (action.startProgress > action.finishProgress)
+            {
+                 Debug.LogWarning($"[CharacterActionManager] StartProgress ({action.startProgress}) > FinishProgress ({action.finishProgress}).");
             }
 
             _targetCharacter.ResetProgress();
-            _targetCharacter.EndMode = CharacterPathFollower.EndBehavior.Stop;
+            
+            if (action.loop)
+            {
+                _targetCharacter.EndMode = CharacterPathFollower.EndBehavior.Loop;
+            }
+            else
+            {
+                _targetCharacter.EndMode = CharacterPathFollower.EndBehavior.Stop;
+            }
             
             _targetCharacter.StartFollowing();
 
@@ -558,13 +639,13 @@ namespace MyGame.Features.Character
             }
         }
 
-        private IEnumerator DoWalkTo(CharacterAction action)
+        private void DoTeleport(CharacterAction action)
         {
-            if (action.walkTarget == null)
+            if (action.teleportTarget == null)
             {
-                Debug.LogWarning($"[CharacterActionManager] No walk target for WalkTo action '{action.name}'");
+                Debug.LogWarning($"[CharacterActionManager] No teleport target for Teleport action '{action.name}'");
                 CompleteAction(action);
-                yield break;
+                return;
             }
 
             if (_targetCharacter.IsFollowing)
@@ -572,23 +653,25 @@ namespace MyGame.Features.Character
                 _targetCharacter.StopFollowing();
             }
 
-            Transform charTransform = _targetCharacter.transform;
+            // Check if already at position (avoid redundant snaps)
+            float dist = Vector3.Distance(_targetCharacter.transform.position, action.teleportTarget.position);
+            float angle = Quaternion.Angle(_targetCharacter.transform.rotation, action.teleportTarget.rotation);
 
-            while (Vector3.Distance(charTransform.position, action.walkTarget.position) > action.stopDistance)
+            if (dist < 0.1f && angle < 5f)
             {
-                Vector3 direction = (action.walkTarget.position - charTransform.position).normalized;
-                charTransform.position += direction * action.walkSpeed * Time.deltaTime;
-                
-                if (direction != Vector3.zero)
-                {
-                    Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
-                    charTransform.rotation = Quaternion.Slerp(charTransform.rotation, targetRotation, 10f * Time.deltaTime);
-                }
-
-                yield return null;
+                Debug.Log($"[CharacterActionManager] Character already at '{action.teleportTarget.name}'. Skipping teleport.");
+                return;
             }
 
-            CompleteAction(action);
+            Debug.Log($"[CharacterActionManager] Teleporting to '{action.teleportTarget.name}'");
+            _targetCharacter.transform.position = action.teleportTarget.position;
+            _targetCharacter.transform.rotation = action.teleportTarget.rotation;
+
+            // Snap camera if available
+            if (_cameraController != null)
+            {
+                _cameraController.SnapToPosition();
+            }
         }
 
         private void CompleteAction(CharacterAction action)
@@ -614,9 +697,23 @@ namespace MyGame.Features.Character
                 }
             }
             
+            if (_requireManualTrigger)
+            {
+                Debug.Log("[CharacterActionManager] Waiting for manual trigger to proceed...");
+                return;
+            }
+            
             PlayAction(_currentActionIndex + 1);
         }
         
+        [ContextMenu("Trigger Next Action")]
+        public void TriggerNextAction()
+        {
+            if (!_isPlaying) return;
+            Debug.Log("[CharacterActionManager] Manual trigger received.");
+            PlayAction(_currentActionIndex + 1);
+        }
+
         public void StopSequence()
         {
             if (_currentActionCoroutine != null) 

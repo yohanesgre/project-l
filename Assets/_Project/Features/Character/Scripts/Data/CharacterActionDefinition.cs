@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using MyGame.Core;
 
 namespace MyGame.Features.Character.Data
 {
@@ -7,7 +8,7 @@ namespace MyGame.Features.Character.Data
     {
         Idle,
         Ride,
-        WalkTo
+        Teleport
     }
 
     [Serializable]
@@ -16,6 +17,10 @@ namespace MyGame.Features.Character.Data
         public string actionName = "New Action";
         public ActionType actionType;
         
+        [Header("Camera")]
+        [Tooltip("Camera mode to use during this action.")]
+        public CameraController.CameraMode cameraMode = CameraController.CameraMode.PathFollow;
+
         [Header("Transition")]
         public bool fadeOut = false;
         public bool fadeIn = false;
@@ -25,16 +30,13 @@ namespace MyGame.Features.Character.Data
         [Tooltip("Duration for Idle action")]
         public float duration = 2f;
         
-        [Tooltip("Key to find the target object (Path or Walk Target) in the scene bindings.")]
+        [Tooltip("Key to find the target object (Path or Teleport Target) in the scene bindings.")]
         public string targetKey;
         
         [Header("Ride Specific")]
         [Range(0f, 1f)] public float startProgress = 0f;
         [Range(0f, 1f)] public float finishProgress = 1f;
-        
-        [Header("Walk Specific")]
-        public float walkSpeed = 2f;
-        public float stopDistance = 0.1f;
+        public bool loop = false;
         
         [Header("Events")]
         [Tooltip("Optional: Trigger a scene transition command on completion (e.g. 'SceneA_to_SceneB')")]

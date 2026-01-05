@@ -173,8 +173,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Core::MyGame.Core.AnimatedSceneController
   animatedScenes:
-  - Scene_Riding_Stop
-  - Scene_Riding_Looping
+  - Scene_Long_Road
+  - Scene_Looping_Road
   loopScenes: 0
   autoTransitionDelay: 0
   fadeOutDuration: 1.5
@@ -259,9 +259,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Features.Sequence::MyGame.Features.Sequence.SequenceManager
   _sequences:
   - {fileID: 11400000, guid: 2d4f2500434a19d0e9f51001a15b1634, type: 2}
-  - {fileID: 11400000, guid: 244f6e06bf7e2472b9fc09802989f72e, type: 2}
+  - {fileID: 11400000, guid: c84a5162312af43ee81a8bd28eccea98, type: 2}
+  - {fileID: 11400000, guid: 0542d814d7a68a1d7a1d80b9086bb64c, type: 2}
   _startIndex: 0
-  _playOnStart: 0
+  _playOnStart: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

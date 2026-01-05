@@ -6,10 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Project/Scenes/Animated_Scenes/Scene_Riding_Looping.unity
+    path: Assets/_Project/Scenes/Animated_Scenes/Scene_Looping_Road.unity
     guid: 2a03249d4787863f9911380fa046837b
   - enabled: 1
-    path: Assets/_Project/Scenes/Animated_Scenes/Scene_Riding_Stop.unity
+    path: Assets/_Project/Scenes/Animated_Scenes/Scene_Long_Road.unity
     guid: f63712cdd311c47fa8b4d25e2562403e
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

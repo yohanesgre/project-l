@@ -62,6 +62,26 @@ namespace MyGame.Features.Sequence
             }
         }
 
+        public void PlaySequenceById(string sequenceId)
+        {
+            if (string.IsNullOrEmpty(sequenceId)) return;
+
+            var sequence = _sequences.Find(s => s != null && s.id == sequenceId);
+            if (sequence != null)
+            {
+                PlaySequence(sequence);
+            }
+            else
+            {
+                Debug.LogWarning($"[SequenceManager] Sequence with ID '{sequenceId}' not found.");
+            }
+        }
+
+        public bool HasSequence(string sequenceId)
+        {
+            return _sequences.Exists(s => s != null && s.id == sequenceId);
+        }
+
         public void PlaySequence(MasterSequence sequence)
         {
             if (_isPlaying)
@@ -85,6 +105,20 @@ namespace MyGame.Features.Sequence
             MyGame.Features.Character.CharacterActionManager.IsMasterSequenceActive = false;
         }
 
+        public void TriggerNextAction()
+        {
+            var actionManager = FindObjectOfType<MyGame.Features.Character.CharacterActionManager>();
+            if (actionManager != null)
+            {
+                Debug.Log("[SequenceManager] Relaying manual trigger to CharacterActionManager.");
+                actionManager.TriggerNextAction();
+            }
+            else
+            {
+                Debug.LogWarning("[SequenceManager] Cannot trigger next action: CharacterActionManager not found.");
+            }
+        }
+
         private IEnumerator RunSequenceRoutine()
         {
             if (_currentSequence == null) yield break;
@@ -98,7 +132,7 @@ namespace MyGame.Features.Sequence
                 {
                     if (step != null)
                     {
-                        Debug.Log($"[SequenceManager] Executing Step: {step.stepName}");
+                        Debug.Log($"[SequenceManager] Executing Step: {step.name}");
                         yield return step.Execute(this);
                     }
                 }

@@ -13,6 +13,7 @@ namespace MyGame.Core.Editor
         private CameraController _controller;
         
         // Serialized properties
+        private SerializedProperty _modeProp;
         private SerializedProperty _pathProviderComponentProp;
         private SerializedProperty _targetProp;
         private SerializedProperty _targetPathFollowerComponentProp;
@@ -31,10 +32,17 @@ namespace MyGame.Core.Editor
         private SerializedProperty _gizmoColorProp;
         private SerializedProperty _gizmoSizeProp;
         
+        // Follow Mode properties
+        private SerializedProperty _followOffsetProp;
+        private SerializedProperty _followLocalSpaceProp;
+        private SerializedProperty _followDampingProp;
+        private SerializedProperty _followLookAtSpeedProp;
+        
         private void OnEnable()
         {
             _controller = (CameraController)target;
             
+            _modeProp = serializedObject.FindProperty("_mode");
             _pathProviderComponentProp = serializedObject.FindProperty("_pathProviderComponent");
             _targetProp = serializedObject.FindProperty("_target");
             _targetPathFollowerComponentProp = serializedObject.FindProperty("_targetPathFollowerComponent");
@@ -52,96 +60,143 @@ namespace MyGame.Core.Editor
             _showGizmosProp = serializedObject.FindProperty("_showGizmos");
             _gizmoColorProp = serializedObject.FindProperty("_gizmoColor");
             _gizmoSizeProp = serializedObject.FindProperty("_gizmoSize");
+            
+            _followOffsetProp = serializedObject.FindProperty("_followOffset");
+            _followLocalSpaceProp = serializedObject.FindProperty("_followLocalSpace");
+            _followDampingProp = serializedObject.FindProperty("_followDamping");
+            _followLookAtSpeedProp = serializedObject.FindProperty("_followLookAtSpeed");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
             
+            // Mode Section
+            EditorGUILayout.PropertyField(_modeProp);
+            EditorGUILayout.Space(5);
+
+            CameraController.CameraMode currentMode = (CameraController.CameraMode)_modeProp.enumValueIndex;
+
             // References Section
             EditorGUILayout.LabelField("References", EditorStyles.boldLabel);
             
-            // Custom path provider field
-            DrawPathProviderField();
+            if (currentMode == CameraController.CameraMode.PathFollow)
+            {
+                // Custom path provider field
+                DrawPathProviderField();
+            }
             
             EditorGUILayout.PropertyField(_targetProp);
-            EditorGUILayout.PropertyField(_targetPathFollowerComponentProp);
             
-            // Show path provider info
-            var pathProvider = _pathProviderComponentProp.objectReferenceValue as IPathProvider;
-            if (pathProvider != null)
+            if (currentMode == CameraController.CameraMode.PathFollow)
             {
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                var comp = _pathProviderComponentProp.objectReferenceValue as Component;
-                EditorGUILayout.LabelField("Path Type:", comp.GetType().Name);
-                EditorGUILayout.LabelField("Valid Path:", pathProvider.HasValidPath ? "Yes" : "No");
-                if (pathProvider.HasValidPath)
+                EditorGUILayout.PropertyField(_targetPathFollowerComponentProp);
+            
+                // Show path provider info
+                var pathProvider = _pathProviderComponentProp.objectReferenceValue as IPathProvider;
+                if (pathProvider != null)
                 {
-                    EditorGUILayout.LabelField("Path Length:", $"{pathProvider.TotalPathLength:F2} units");
-                    EditorGUILayout.LabelField("Is Loop:", pathProvider.IsLoop ? "Yes" : "No");
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                    var comp = _pathProviderComponentProp.objectReferenceValue as Component;
+                    EditorGUILayout.LabelField("Path Type:", comp.GetType().Name);
+                    EditorGUILayout.LabelField("Valid Path:", pathProvider.HasValidPath ? "Yes" : "No");
+                    if (pathProvider.HasValidPath)
+                    {
+                        EditorGUILayout.LabelField("Path Length:", $"{pathProvider.TotalPathLength:F2} units");
+                        EditorGUILayout.LabelField("Is Loop:", pathProvider.IsLoop ? "Yes" : "No");
+                    }
+                    EditorGUILayout.EndVertical();
                 }
-                EditorGUILayout.EndVertical();
-            }
-            else if (_pathProviderComponentProp.objectReferenceValue == null)
-            {
-                EditorGUILayout.HelpBox(
-                    "Assign a path provider (CustomPath or RoadGenerator) for the camera to follow.",
-                    MessageType.Info
-                );
-            }
-            
-            EditorGUILayout.Space(10);
-            
-            // Path Position Settings
-            EditorGUILayout.LabelField("Path Position Settings", EditorStyles.boldLabel);
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(_progressOffsetProp);
-            EditorGUILayout.PropertyField(_heightOffsetProp);
-            EditorGUILayout.PropertyField(_lateralOffsetProp);
-            if (EditorGUI.EndChangeCheck())
-            {
-                serializedObject.ApplyModifiedProperties();
-                if (!Application.isPlaying)
+                else if (_pathProviderComponentProp.objectReferenceValue == null)
                 {
-                    _controller.SnapToPosition();
-                    SceneView.RepaintAll();
+                    EditorGUILayout.HelpBox(
+                        "Assign a path provider (CustomPath or RoadGenerator) for the camera to follow.",
+                        MessageType.Info
+                    );
                 }
             }
             
             EditorGUILayout.Space(10);
             
-            // Look At Settings
-            EditorGUILayout.LabelField("Look At Settings", EditorStyles.boldLabel);
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(_lookAtHeightOffsetProp);
-            EditorGUILayout.PropertyField(_rotationSmoothSpeedProp);
-            EditorGUILayout.PropertyField(_framingOffsetXProp);
-            EditorGUILayout.PropertyField(_framingOffsetYProp);
-            if (EditorGUI.EndChangeCheck())
+            if (currentMode == CameraController.CameraMode.PathFollow)
             {
-                serializedObject.ApplyModifiedProperties();
-                if (!Application.isPlaying)
+                // Path Position Settings
+                EditorGUILayout.LabelField("Path Position Settings", EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(_progressOffsetProp);
+                EditorGUILayout.PropertyField(_heightOffsetProp);
+                EditorGUILayout.PropertyField(_lateralOffsetProp);
+                if (EditorGUI.EndChangeCheck())
                 {
-                    _controller.SnapToPosition();
-                    SceneView.RepaintAll();
+                    serializedObject.ApplyModifiedProperties();
+                    if (!Application.isPlaying)
+                    {
+                        _controller.SnapToPosition();
+                        SceneView.RepaintAll();
+                    }
+                }
+                
+                EditorGUILayout.Space(10);
+                
+                // Look At Settings
+                EditorGUILayout.LabelField("Look At Settings", EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(_lookAtHeightOffsetProp);
+                EditorGUILayout.PropertyField(_rotationSmoothSpeedProp);
+                EditorGUILayout.PropertyField(_framingOffsetXProp);
+                EditorGUILayout.PropertyField(_framingOffsetYProp);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    if (!Application.isPlaying)
+                    {
+                        _controller.SnapToPosition();
+                        SceneView.RepaintAll();
+                    }
+                }
+                
+                EditorGUILayout.Space(10);
+                
+                // Downhill Illusion
+                EditorGUILayout.LabelField("Downhill Illusion (Camera Tilt)", EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(_rollAngleProp);
+                EditorGUILayout.PropertyField(_pitchOffsetProp);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    if (!Application.isPlaying)
+                    {
+                        _controller.SnapToPosition();
+                        SceneView.RepaintAll();
+                    }
+                }
+
+                EditorGUILayout.Space(10);
+
+                 // Manual Control
+                EditorGUILayout.LabelField("Manual Control", EditorStyles.boldLabel);
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(_manualProgressProp);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    if (!Application.isPlaying)
+                    {
+                        _controller.SnapToPosition();
+                        SceneView.RepaintAll();
+                    }
                 }
             }
-            
-            EditorGUILayout.Space(10);
-            
-            // Downhill Illusion
-            EditorGUILayout.LabelField("Downhill Illusion (Camera Tilt)", EditorStyles.boldLabel);
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(_rollAngleProp);
-            EditorGUILayout.PropertyField(_pitchOffsetProp);
-            if (EditorGUI.EndChangeCheck())
+            else if (currentMode == CameraController.CameraMode.Follow)
             {
-                serializedObject.ApplyModifiedProperties();
-                if (!Application.isPlaying)
-                {
-                    _controller.SnapToPosition();
-                    SceneView.RepaintAll();
-                }
+                // Follow Mode Settings
+                EditorGUILayout.LabelField("Follow Settings", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(_followOffsetProp);
+                EditorGUILayout.PropertyField(_followLocalSpaceProp);
+                EditorGUILayout.PropertyField(_followDampingProp);
+                EditorGUILayout.PropertyField(_followLookAtSpeedProp);
+                EditorGUILayout.PropertyField(_lookAtHeightOffsetProp);
             }
             
             EditorGUILayout.Space(10);
@@ -149,22 +204,6 @@ namespace MyGame.Core.Editor
             // Initialization
             EditorGUILayout.LabelField("Initialization", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_snapOnStartProp);
-            
-            EditorGUILayout.Space(10);
-            
-            // Manual Control
-            EditorGUILayout.LabelField("Manual Control", EditorStyles.boldLabel);
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(_manualProgressProp);
-            if (EditorGUI.EndChangeCheck())
-            {
-                serializedObject.ApplyModifiedProperties();
-                if (!Application.isPlaying)
-                {
-                    _controller.SnapToPosition();
-                    SceneView.RepaintAll();
-                }
-            }
             
             EditorGUILayout.Space(10);
             

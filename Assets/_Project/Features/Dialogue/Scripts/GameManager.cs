@@ -4,7 +4,9 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using MyGame.Core.Save;
 using MyGame.Features.Dialogue.Save;
+using MyGame.Core;
 using MyGame.Features.Dialogue.Models;
+using MyGame.Features.Sequence;
 
 namespace MyGame.Features.Dialogue
 {
@@ -22,6 +24,12 @@ namespace MyGame.Features.Dialogue
         [Header("References")]
         [Tooltip("Reference to DialogueManager in scene")]
         [SerializeField] private DialogueManager dialogueManager;
+        
+        [Tooltip("Reference to SequenceManager in scene")]
+        [SerializeField] private SequenceManager sequenceManager;
+
+        [Tooltip("Reference to AnimatedSceneController in scene")]
+        [SerializeField] private AnimatedSceneController sceneController;
 
         [Header("Settings")]
         [Tooltip("Pause the game when dialogue ends")]
@@ -83,6 +91,11 @@ namespace MyGame.Features.Dialogue
             else
             {
                 SetState(GameState.Title);
+                // Start title sequence (background loop)
+                if (sequenceManager != null)
+                {
+                    sequenceManager.PlaySequenceAtIndex(0); 
+                }
             }
         }
 
@@ -126,10 +139,19 @@ namespace MyGame.Features.Dialogue
                 return;
             }
 
+            // Ensure time scale is reset
+            Time.timeScale = 1f;
+
             SetState(GameState.Loading);
 
             // Clear any existing save state for new game
             SaveController.ClearFlags();
+
+            // Stop title sequence before starting game
+            if (sequenceManager != null)
+            {
+                sequenceManager.StopSequence();
+            }
 
             // Start dialogue
             if (dialogueManager != null)
@@ -142,6 +164,38 @@ namespace MyGame.Features.Dialogue
             onGameStarted?.Invoke();
 
             Debug.Log($"[GameManager] New game started with database: {database.name}");
+        }
+
+        /// <summary>
+        /// Continues from the most recent save file found.
+        /// </summary>
+        public bool ContinueFromLastSave()
+        {
+            int lastSlot = -1;
+            System.DateTime lastTime = System.DateTime.MinValue;
+            
+            var slots = SaveController.GetAllSlotInfo();
+            foreach (var slot in slots)
+            {
+                if (slot.HasSave && !string.IsNullOrEmpty(slot.SavedAt))
+                {
+                    if (System.DateTime.TryParse(slot.SavedAt, out var saveTime))
+                    {
+                        if (saveTime > lastTime)
+                        {
+                            lastTime = saveTime;
+                            lastSlot = slot.SlotIndex;
+                        }
+                    }
+                }
+            }
+
+            if (lastSlot != -1)
+            {
+                return ContinueGame(lastSlot);
+            }
+            
+            return false;
         }
 
         /// <summary>
@@ -247,6 +301,13 @@ namespace MyGame.Features.Dialogue
             // End current dialogue
             dialogueManager?.EndDialogue();
 
+            // Return to title sequence
+            if (sequenceManager != null)
+            {
+                sequenceManager.StopSequence(); // Ensure clean state
+                sequenceManager.PlaySequenceAtIndex(0);
+            }
+
             SetState(GameState.Title);
             OnReturnedToTitle?.Invoke();
             onReturnedToTitle?.Invoke();
@@ -300,6 +361,16 @@ namespace MyGame.Features.Dialogue
             {
                 dialogueManager = FindFirstObjectByType<DialogueManager>();
             }
+            
+            if (sequenceManager == null)
+            {
+                sequenceManager = FindFirstObjectByType<SequenceManager>();
+            }
+
+            if (sceneController == null)
+            {
+                sceneController = FindFirstObjectByType<AnimatedSceneController>();
+            }
         }
 
         private void SubscribeToEvents()
@@ -307,6 +378,7 @@ namespace MyGame.Features.Dialogue
             if (dialogueManager != null)
             {
                 dialogueManager.OnDialogueEnded += HandleDialogueEnded;
+                dialogueManager.OnDialogueChanged += HandleDialogueChanged;
             }
         }
 
@@ -315,6 +387,7 @@ namespace MyGame.Features.Dialogue
             if (dialogueManager != null)
             {
                 dialogueManager.OnDialogueEnded -= HandleDialogueEnded;
+                dialogueManager.OnDialogueChanged -= HandleDialogueChanged;
             }
         }
 
@@ -330,6 +403,48 @@ namespace MyGame.Features.Dialogue
             if (pauseOnDialogueEnd && _currentState == GameState.Playing)
             {
                 PauseGame();
+            }
+        }
+
+        private void HandleDialogueChanged(DialogueEntry entry)
+        {
+            if (entry == null || !entry.HasEvents) return;
+
+            var tags = entry.EventTag.Split('|');
+            foreach (var tag in tags)
+            {
+                var trimmedTag = tag.Trim();
+                if (string.IsNullOrEmpty(trimmedTag)) continue;
+
+                // 1. Check for Scene Transition tags ("scene:" or "load:")
+                if ((trimmedTag.StartsWith("scene:") || trimmedTag.StartsWith("load:")) && sceneController != null)
+                {
+                    var parts = trimmedTag.Split(':');
+                    if (parts.Length > 1)
+                    {
+                        var sceneName = parts[1].Trim();
+                        sceneController.TransitionToSceneByName(sceneName);
+                    }
+                    continue;
+                }
+
+                // 2. Check for explicit "seq:" prefix
+                if ((trimmedTag.StartsWith("seq:") || trimmedTag.StartsWith("sequence:")) && sequenceManager != null)
+                {
+                    var parts = trimmedTag.Split(':');
+                    if (parts.Length > 1)
+                    {
+                        var seqId = parts[1].Trim();
+                        sequenceManager.PlaySequenceById(seqId);
+                    }
+                    continue;
+                }
+
+                // 3. Check for exact ID match (as per user request "match Sequence_Id")
+                if (sequenceManager != null && sequenceManager.HasSequence(trimmedTag))
+                {
+                    sequenceManager.PlaySequenceById(trimmedTag);
+                }
             }
         }
 

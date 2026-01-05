@@ -6,12 +6,23 @@ namespace MyGame.Core
     /// A camera controller that follows any IPathProvider path.
     /// Designed for looping road animations with parallax backgrounds.
     /// Follows target in both edit mode and play mode.
+    /// Now supports an Orbit Mode for free-look around the target.
     /// </summary>
     [ExecuteAlways]
     public class CameraController : MonoBehaviour
     {
+        public enum CameraMode
+        {
+            PathFollow,
+            Follow
+        }
+
         #region Serialized Fields
         
+        [Header("Mode")]
+        [Tooltip("Current camera behavior mode.")]
+        [SerializeField] private CameraMode _mode = CameraMode.PathFollow;
+
         [Header("References")]
         [Tooltip("The path provider that defines the camera's path (CustomPath, RoadGenerator, etc.).")]
         [RequireInterface(typeof(IPathProvider))]
@@ -62,6 +73,19 @@ namespace MyGame.Core
         [Tooltip("Snap camera to position immediately on start.")]
         [SerializeField] private bool _snapOnStart = true;
         
+        [Header("Follow Mode Settings")]
+        [Tooltip("Offset from the target position (X, Y, Z).")]
+        [SerializeField] private Vector3 _followOffset = new Vector3(-5f, 2f, -5f);
+
+        [Tooltip("If true, offset is relative to target rotation (Third Person). If false, offset is world space (Side Scroller/Drone).")]
+        [SerializeField] private bool _followLocalSpace = false;
+
+        [Tooltip("Smooth time for follow damping.")]
+        [SerializeField] private float _followDamping = 0.1f;
+        
+        [Tooltip("Look at smoothing speed (0 = instant).")]
+        [SerializeField] private float _followLookAtSpeed = 10f;
+
         [Header("Manual Control (if no target follower)")]
         [Tooltip("Current progress along the path (0 = start, 1 = end). Used when no target follower is assigned.")]
         [Range(0f, 1f)]
@@ -76,11 +100,20 @@ namespace MyGame.Core
         private IPathFollower _targetPathFollower;
         private bool _isInitialized;
         private bool _hasWarnedAboutInvalidPathFollower;
+
+        // Follow State
+        private Vector3 _currentVelocity; // For damping
         
         #endregion
 
         #region Properties
         
+        public CameraMode Mode
+        {
+            get => _mode;
+            set => _mode = value;
+        }
+
         /// <summary>
         /// The path provider for the camera.
         /// </summary>
@@ -211,18 +244,27 @@ namespace MyGame.Core
                 ResolvePathProvider();
                 ResolveTargetPathFollower();
             }
-            
-            if (_pathProvider == null || !_pathProvider.HasValidPath) return;
-            
-            // In edit mode, always snap (no smoothing)
-            if (!Application.isPlaying)
+
+            if (_target == null) return;
+
+            if (_mode == CameraMode.Follow)
             {
-                SnapToPosition();
+                UpdateFollowCamera();
             }
-            else
+            else // PathFollow
             {
-                UpdateCameraPosition();
-                UpdateCameraRotation();
+                if (_pathProvider == null || !_pathProvider.HasValidPath) return;
+                
+                // In edit mode, always snap (no smoothing)
+                if (!Application.isPlaying)
+                {
+                    SnapToPosition();
+                }
+                else
+                {
+                    UpdateCameraPosition();
+                    UpdateCameraRotation();
+                }
             }
         }
         
@@ -253,26 +295,55 @@ namespace MyGame.Core
         /// </summary>
         public void SnapToPosition()
         {
-            if (_pathProvider == null || !_pathProvider.HasValidPath) return;
-            
             if (_transform == null)
             {
                 _transform = transform;
             }
-            
-            Vector3 targetPosition = CalculateTargetPosition();
-            _transform.position = targetPosition;
-            
-            // Snap rotation too
-            if (_target != null)
+
+            if (_mode == CameraMode.Follow)
             {
-                Vector3 lookAtPos = _target.position + Vector3.up * _lookAtHeightOffset;
-                Vector3 lookDirection = lookAtPos - _transform.position;
+                if (_target == null) return;
                 
-                if (lookDirection.sqrMagnitude > 0.001f)
+                // 1. Position
+                Vector3 desiredPosition;
+                if (_followLocalSpace)
                 {
-                    Quaternion lookRotation = Quaternion.LookRotation(lookDirection.normalized, Vector3.up);
-                    _transform.rotation = ApplyTiltToRotation(lookRotation);
+                    desiredPosition = _target.TransformPoint(_followOffset);
+                }
+                else
+                {
+                    desiredPosition = _target.position + _followOffset;
+                }
+                
+                _transform.position = desiredPosition;
+                _currentVelocity = Vector3.zero;
+                
+                // 2. Rotation
+                Vector3 lookAtPos = _target.position;
+                if (_lookAtHeightOffset != 0)
+                {
+                    lookAtPos += Vector3.up * _lookAtHeightOffset;
+                }
+                _transform.LookAt(lookAtPos);
+            }
+            else // PathFollow
+            {
+                if (_pathProvider == null || !_pathProvider.HasValidPath) return;
+                
+                Vector3 targetPosition = CalculateTargetPosition();
+                _transform.position = targetPosition;
+                
+                // Snap rotation too
+                if (_target != null)
+                {
+                    Vector3 lookAtPos = _target.position + Vector3.up * _lookAtHeightOffset;
+                    Vector3 lookDirection = lookAtPos - _transform.position;
+                    
+                    if (lookDirection.sqrMagnitude > 0.001f)
+                    {
+                        Quaternion lookRotation = Quaternion.LookRotation(lookDirection.normalized, Vector3.up);
+                        _transform.rotation = ApplyTiltToRotation(lookRotation);
+                    }
                 }
             }
         }
@@ -393,6 +464,56 @@ namespace MyGame.Core
             return _manualProgress;
         }
         
+        /// <summary>
+        /// Updates the camera for Follow Mode (Drone Shot).
+        /// </summary>
+        private void UpdateFollowCamera()
+        {
+            if (_target == null) return;
+            
+            // 1. Calculate Target Position with Offset
+            Vector3 desiredPosition;
+            if (_followLocalSpace)
+            {
+                desiredPosition = _target.TransformPoint(_followOffset);
+            }
+            else
+            {
+                desiredPosition = _target.position + _followOffset;
+            }
+            
+            // 2. Smooth Move
+            if (_followDamping > 0f)
+            {
+                 _transform.position = Vector3.SmoothDamp(_transform.position, desiredPosition, ref _currentVelocity, _followDamping);
+            }
+            else
+            {
+                _transform.position = desiredPosition;
+            }
+            
+            // 3. Look At Target
+            Vector3 lookAtPos = _target.position;
+            if (_lookAtHeightOffset != 0)
+            {
+                lookAtPos += Vector3.up * _lookAtHeightOffset;
+            }
+            
+            Vector3 lookDir = lookAtPos - _transform.position;
+            if (lookDir != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(lookDir);
+                if (_followLookAtSpeed > 0)
+                {
+                    _transform.rotation = Quaternion.Slerp(_transform.rotation, targetRotation, Time.deltaTime * _followLookAtSpeed);
+                }
+                else
+                {
+                    _transform.rotation = targetRotation;
+                }
+            }
+        }
+
         /// <summary>
         /// Calculates the camera's target position along the path.
         /// </summary>
