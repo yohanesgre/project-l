@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 502ce4eb07a2367059fed16f1ec63ae8, type: 3}
+  m_Name: SFX Audio Database
+  m_EditorClassIdentifier: 
+  entries:
+  - key: button_click
+    clip: {fileID: 8300000, guid: f1ad3019e914a73b6bd6ce6b12d84289, type: 3}
+    defaultVolume: 1
+    loop: 0
+  - key: typewriter
+    clip: {fileID: 8300000, guid: a61652b9ba395e5528ee94c53f2adedd, type: 3}
+    defaultVolume: 1
+    loop: 0
+  - key: engine
+    clip: {fileID: 8300000, guid: 27641a74d9a3193c39205e20149bc352, type: 3}
+    defaultVolume: 1
+    loop: 1
+  - key: wind
+    clip: {fileID: 8300000, guid: c358755237a48006ea9dc53ea50c4e80, type: 3}
+    defaultVolume: 1
+    loop: 0

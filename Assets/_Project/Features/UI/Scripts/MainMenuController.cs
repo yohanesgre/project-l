@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using MyGame.Core.Save;
+using MyGame.Core.Audio;
 using MyGame.Features.Dialogue;
 
 namespace MyGame.Features.UI
@@ -105,6 +106,7 @@ namespace MyGame.Features.UI
 
         private void OnNewGameClicked()
         {
+            PlayButtonClickSFX();
             if (gameManager != null)
             {
                 gameManager.StartNewGame();
@@ -113,6 +115,7 @@ namespace MyGame.Features.UI
 
         private void OnContinueClicked()
         {
+            PlayButtonClickSFX();
             if (gameManager != null)
             {
                 // Continue from the most recent save
@@ -122,10 +125,19 @@ namespace MyGame.Features.UI
 
         private void OnQuitClicked()
         {
+            PlayButtonClickSFX();
             Application.Quit();
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #endif
+        }
+
+        private void PlayButtonClickSFX()
+        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFX("button_click");
+            }
         }
     }
 }

@@ -1,21 +1,14 @@
 using System;
 using UnityEngine;
+using MyGame.Core.Audio;
 
 namespace MyGame.Features.Dialogue.Events
 {
-    /// <summary>
-    /// Handles sound effect events (sfx:sound_name).
-    /// Loads audio clips from Resources/SFX/ folder.
-    /// </summary>
     public class SoundEffectHandler : MonoBehaviour, IEventHandler
     {
         public string EventType => "sfx";
 
-        [Header("References")]
-        [Tooltip("AudioSource for playing sound effects")]
-        [SerializeField] private AudioSource audioSource;
-
-        [Header("Settings")]
+        [Header("Legacy Fallback (when AudioManager not available)")]
         [Tooltip("Path in Resources folder where SFX are stored")]
         [SerializeField] private string resourcePath = "SFX";
 
@@ -23,25 +16,25 @@ namespace MyGame.Features.Dialogue.Events
         [Range(0f, 1f)]
         [SerializeField] private float volume = 1f;
 
-        private void Awake()
-        {
-            if (audioSource == null)
-            {
-                audioSource = GetComponent<AudioSource>();
-                if (audioSource == null)
-                {
-                    audioSource = gameObject.AddComponent<AudioSource>();
-                    audioSource.playOnAwake = false;
-                }
-            }
-        }
+        private AudioSource _legacyAudioSource;
 
         public void Execute(string value, Action onComplete)
         {
-            var path = string.IsNullOrEmpty(resourcePath) 
-                ? value 
-                : $"{resourcePath}/{value}";
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFX(value);
+                onComplete?.Invoke();
+                return;
+            }
 
+            ExecuteLegacy(value, onComplete);
+        }
+
+        private void ExecuteLegacy(string value, Action onComplete)
+        {
+            EnsureLegacyAudioSource();
+
+            var path = string.IsNullOrEmpty(resourcePath) ? value : $"{resourcePath}/{value}";
             var clip = Resources.Load<AudioClip>(path);
 
             if (clip == null)
@@ -51,10 +44,20 @@ namespace MyGame.Features.Dialogue.Events
                 return;
             }
 
-            audioSource.PlayOneShot(clip, volume);
-            
-            // Complete immediately - sound plays in background
+            _legacyAudioSource.PlayOneShot(clip, volume);
             onComplete?.Invoke();
+        }
+
+        private void EnsureLegacyAudioSource()
+        {
+            if (_legacyAudioSource != null) return;
+
+            _legacyAudioSource = GetComponent<AudioSource>();
+            if (_legacyAudioSource == null)
+            {
+                _legacyAudioSource = gameObject.AddComponent<AudioSource>();
+                _legacyAudioSource.playOnAwake = false;
+            }
         }
     }
 }

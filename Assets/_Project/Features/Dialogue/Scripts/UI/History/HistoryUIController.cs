@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
+using MyGame.Core.Audio;
 using MyGame.Features.Dialogue;
 using MyGame.Features.Dialogue.Models;
 
@@ -359,8 +360,17 @@ namespace MyGame.Features.Dialogue.UI
 
         private void OnCloseButtonClicked()
         {
+            PlayButtonClickSFX();
             Debug.Log("[HistoryUIController] Close button clicked");
             Hide();
+        }
+
+        private void PlayButtonClickSFX()
+        {
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFX("button_click");
+            }
         }
 
         private void OnCloseClick(ClickEvent evt)

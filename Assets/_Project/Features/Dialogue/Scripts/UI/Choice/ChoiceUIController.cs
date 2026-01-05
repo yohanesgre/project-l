@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using MyGame.Core.Audio;
 using MyGame.Features.Dialogue;
 
 namespace MyGame.Features.Dialogue.UI
@@ -238,6 +239,12 @@ namespace MyGame.Features.Dialogue.UI
 
         private void OnChoiceButtonClick(int index)
         {
+            // Play button click SFX
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySFX("button_click");
+            }
+
             // Invoke event for external listeners
             OnChoiceSelected?.Invoke(index);
 

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 502ce4eb07a2367059fed16f1ec63ae8, type: 3}
+  m_Name: BGM Audio Database
+  m_EditorClassIdentifier: 
+  entries:
+  - key: main_menu
+    clip: {fileID: 8300000, guid: 3f88e1bc222cc20c19a28acb5be1902f, type: 3}
+    defaultVolume: 1
+    loop: 1
+  - key: driving_1
+    clip: {fileID: 8300000, guid: 7194f6dca4fb4fb678ae3f69a12b5bc2, type: 3}
+    defaultVolume: 1
+    loop: 1
+  - key: driving_2
+    clip: {fileID: 8300000, guid: 516a37d6bd8127419add8570b8d1217b, type: 3}
+    defaultVolume: 1
+    loop: 1
+  - key: stopping
+    clip: {fileID: 8300000, guid: 81f687718daaf667eb8fb33adb42acf1, type: 3}
+    defaultVolume: 1
+    loop: 1
+  - key: bird_waves
+    clip: {fileID: 8300000, guid: 647bcb31431739ed498e19c098e17a3d, type: 3}
+    defaultVolume: 1
+    loop: 1
